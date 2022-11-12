@@ -1,0 +1,210 @@
+:root {
+    --mobile-scale: 0.5;
+    --big-cover: 300px;
+    --medium-cover: 175px;
+    --small-cover: 150px;
+    --gray: #aaaaaa;
+    --content-padding: 8px;
+    --navbar-padding: 10px;
+    --bar-h: 3px;
+    --bar-pad: 6px;
+    --bar-size: calc(var(--bar-h) * 3 + 2 * var(--bar-pad));
+}
+
+body {
+    margin: 0px;
+    font-family: 'Segoe UI', Arial;
+    overflow: hidden;
+}
+
+@media only screen and (min-width: 600px) {
+    .albumInfo:not(.chart) img {
+        width: var(--big-cover);
+    }
+
+    .chart img {
+        width: var(--medium-cover);
+    }
+    
+    .smallAlbums img {
+        width: var(--small-cover);
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .albumInfo:not(.chart) img {
+        width: calc(var(--big-cover) * var(--mobile-scale));
+    }
+
+    .chart img {
+        width: calc(var(--medium-cover) * var(--mobile-scale));
+    }
+    
+    .smallAlbums img {
+        width: calc(var(--small-cover) * var(--mobile-scale));
+    }
+}
+
+#root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+iframe {
+    border: 0px;
+    display: block;
+    margin: 0px auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0px;
+    font-weight: 400;
+}
+
+button {
+    border: 1px solid black;
+    background-color: white;
+    padding: 4px;
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: var(--gray);
+}
+
+.body {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+.toggleSidebar {
+    cursor: pointer;
+}
+
+.toggleSidebar div {
+    width: var(--bar-size);
+    height: var(--bar-h);
+    border-radius: var(--bar-h);
+    background-color: black;
+}
+
+.toggleSidebar div:not(:last-child) {
+    margin-bottom: var(--bar-pad);
+}
+
+.contentContainer {
+    flex: 1;
+    height: calc(100vh - var(--bar-size) - 2 * var(--navbar-padding));
+    overflow: hidden;
+}
+
+.content {
+    overflow: auto;
+    padding: var(--content-padding);
+    height: calc(100% - 2 * var(--content-padding));
+}
+
+.navbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: calc(var(--bar-size) + 2 * var(--navbar-padding));
+    border-bottom: 1px solid black;
+    padding: 0px var(--navbar-padding);
+}
+
+.sidebar {
+    border-right: 1px solid black;
+}
+
+.sidebar > div {
+    padding: 8px;
+    border-bottom: 1px solid var(--gray);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.sidebar > div:is(:hover, .selected) {
+    background-color: var(--gray);
+}
+
+.popupContainer {
+    display: flex;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(200, 200, 200, 0.5);
+    z-index: 1;
+}
+
+.popup {
+    position: relative;
+    padding: 16px;
+    z-index: 2;
+    border: 1px solid black;
+    background-color: white;
+}
+
+.num {
+    width: 32px;
+}
+
+.albumInfo {
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.albumInfo:not(.chart) {
+    justify-content: center;
+}
+
+.label {
+    color: var(--gray);
+}
+
+.link {
+    cursor: pointer;
+}
+
+.smallAlbums {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.smallAlbums > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.center {
+    text-align: center;
+}
+
+.searchContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 1;
+    margin: 0px auto;
+}
+
+.searchContainer input {
+    width: min(50%, 300px);
+}
+
+.rate {
+    margin-left: 8px;
+}
