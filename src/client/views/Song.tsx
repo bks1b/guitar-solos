@@ -36,7 +36,7 @@ export default ({ id }: { id: string; }) => {
                 song[2].length
                     ? <>
                         <hr/>
-                        {song[2].sort((a, b) => a[0].start - b[0].start).map((x, i) => <div key={i}>
+                        {song[2].sort((a, b) => a[0].start - b[0].start).map(x => <div key={x[0].start}>
                             <h1 className='center'>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h1>
                             <Ratings sum={x[2]} count={x[3]}/>
                             {
@@ -71,7 +71,14 @@ export default ({ id }: { id: string; }) => {
                         <br/>
                         <label>End: <TimeInput _ref={endM}/>:<TimeInput sec _ref={endS}/></label>
                         <br/>
-                        <button onClick={() => request('/add/solo', { song: id, start: getSecs(startM, startS), end: +endM.current!.value * 60 + +endS.current!.value }, () => setReload(reload + 1))}>Add</button>
+                        <button onClick={() => request('/add/solo', {
+                            song: id,
+                            start: getSecs(startM, startS),
+                            end: +endM.current!.value * 60 + +endS.current!.value,
+                        }, () => {
+                            startM.current.value = startS.current.value = endM.current.value = endS.current.value = '';
+                            setReload(reload + 1);
+                        })}>Add</button>
                     </>
                     : <></>
             }
