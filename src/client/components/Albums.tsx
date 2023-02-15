@@ -6,7 +6,7 @@ export default ({ arr, ratings, album, ts }: { arr: Solos; ratings?: boolean; al
     return <div className='smallAlbums'>{arr.map((x, i) => <div key={i}>
         <img src={x[2].cover} className='link' onClick={() => navigate(['album', x[2].id])}/>
         <h3 onClick={() => navigate([album ? 'album' : 'song', x[album ? 2 : 1].id])} className='link'>{x[album ? 2 : 1].name}</h3>
-        <h3>{x[2].artist}</h3>
+        <h3 className='link' onClick={() => navigate([], [['artists', x[2].artist.toLowerCase()]])}>{x[2].artist}</h3>
         {ts ? <h4>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h4> : ''}
         {ratings ? <h4>{x[3]}/10</h4> : ''}
     </div>)}</div>;

@@ -23,8 +23,8 @@ const App = () => {
         else alert('Error: ' + d.error);
     });
     const getPath = () => decodeURIComponent(window.location.pathname).split('/').slice(1).filter(x => x);
-    const navigate = (arr: string[]) => {
-        window.history.pushState('', '', '/' + arr.map(x => encodeURIComponent(x)).join('/'));
+    const navigate = (arr: string[], q?: string[][]) => {
+        window.history.pushState('', '', '/' + arr.map(x => encodeURIComponent(x)).join('/') + (q ? '?' + new URLSearchParams(q) : ''));
         setPath(arr);
     };
     const [user, setUser] = useState<{

@@ -27,11 +27,11 @@ export default ({ id }: { id: string; }) => {
                 <img src={song[1].cover}/>
                 <div>
                     <h1>{song[0].name}</h1>
-                    <h2><a className='label'>by</a> {song[1].artist}</h2>
-                    <h2><a className='label'>on</a> <a onClick={() => navigate(['album', song[1].id])} className='link'>{song[1].name}</a></h2>
+                    <h2><a className='label'>by</a> <a className='link' onClick={() => navigate([], [['artists', song[1].artist.toLowerCase()]])}>{song[1].artist}</a></h2>
+                    <h2><a className='label'>on</a> <a className='link' onClick={() => navigate(['album', song[1].id])}>{song[1].name}</a></h2>
                 </div>
             </div>
-            <a>Genres: {song[0].genres.join(', ')}</a>
+            <a>Genres: {song[0].genres.map((x, i) => <a key={i}><a className='link' onClick={() => navigate([], [['genres', x]])}>{x}</a>{i < song[0].genres.length - 1 ? ', ' : ''}</a>)}</a>
             {
                 song[2].length
                     ? <>
