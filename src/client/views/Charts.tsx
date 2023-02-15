@@ -3,7 +3,7 @@ import { Album, Solo, Song } from '../../types';
 import Ratings from '../components/Ratings';
 import { getTimestamp, MainContext } from '../util';
 
-const getScore = (x: Data) => x[4] ? x[3] / Math.sqrt(x[4]) : 0;
+const getScore = (x: Data) => x[4] ? x[3] / x[4] * 0.8 : 0;
 
 const sortBy = ['score', 'popularity'];
 
