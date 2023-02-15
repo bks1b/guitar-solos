@@ -21,7 +21,7 @@ export default ({ id }: { id: string; }) => {
                 <img src={album[0].cover}/>
                 <div>
                     <h1>{album[0].name}</h1>
-                    <h2><a className='label'>by</a> {album[0].artist}</h2>
+                    <h2><a className='label'>by</a> <a className='link' onClick={() => navigate([], [['artists', album[0].artist.toLowerCase()]])}>{album[0].artist}</a></h2>
                 </div>
             </div>
             <a>Released in: {album[0].year}</a>

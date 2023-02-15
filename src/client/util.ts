@@ -11,7 +11,7 @@ export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + ''
 type Ctx = {
     loggedIn: boolean;
     request: RequestFn;
-    navigate: (x: string[]) => void;
+    navigate: (x: string[], q?: string[][]) => void;
 };
 export type RequestFn = <T>(str: string, body: any, cb: (x: T) => any, err?: (x: string) => any) => Promise<any>;
 export type Solos = [Solo, Song, Album, number][];
