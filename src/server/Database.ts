@@ -141,7 +141,7 @@ export default class {
         const songs = await (await this.db).collection<Song>('songs').find().toArray();
         const matches = [albums, songs].map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
-            .filter(x => x[1] > 0.4)
+            .filter(x => x[1] > 0.25)
             .sort((a, b) => b[1] - a[1])
             .map(x => x[0])) as [Album[], Song[]];
         return [
