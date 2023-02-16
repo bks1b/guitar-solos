@@ -1,11 +1,13 @@
 import { useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
-import { MainContext, Solos } from '../util';
+import { MainContext, renderSortBy, Solos } from '../util';
+
+const sortBy = ['recency', 'rating'];
 
 export default ({ name }: { name: string; }) => {
     const { request } = useContext(MainContext);
     const [user, setUser] = useState<[string, Solos]>();
-    const [sort, setSort] = useState(0);
+    const [sort, setSort] = useState(Math.max(sortBy.indexOf( new URLSearchParams(window.location.search).get('sort')), 0));
     useEffect(() => {
         request<[string, Solos]>('/profile', { name }, x => setUser(x));
     }, []);
@@ -36,10 +38,10 @@ export default ({ name }: { name: string; }) => {
                         : null;
                 })}</tbody>
             </table>
-            <label style={{ display: 'block', marginBottom: 'var(--content-padding)' }}>Sort by: <select defaultValue={sort} onChange={e => setSort(e.target.selectedIndex)}>
-                <option>Recency</option>
-                <option>Rating</option>
-            </select></label>
+            <label style={{ display: 'block', marginBottom: 'var(--content-padding)' }}>Sort by: <select defaultValue={sort} onChange={e => {
+                setSort(e.target.selectedIndex);
+                window.history.pushState('', '', window.location.pathname + (e.target.selectedIndex ? '?sort=' + sortBy[e.target.selectedIndex] : ''));
+            }}>{renderSortBy(sortBy)}</select></label>
             <Albums arr={[...user[1]].sort((a, b) => sort ? b[3] - a[3] : -1)} ratings ts/>
         </>
         : <></>;

@@ -5,6 +5,8 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 
 export const MainContext = createContext<Ctx>(null);
 
+export const renderSortBy = (a: string[]) => a.map((x, i) => <option key={i} value={i}>{x[0].toUpperCase()}{x.slice(1)}</option>);
+
 export const getSecs = (m: MutableRefObject<HTMLInputElement>, s: MutableRefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
 

@@ -1,7 +1,7 @@
 import { Fragment, useContext, useEffect, useState } from 'react';
 import { Album, Solo, Song } from '../../types';
 import Ratings from '../components/Ratings';
-import { getTimestamp, MainContext } from '../util';
+import { getTimestamp, MainContext, renderSortBy } from '../util';
 
 const getScore = (x: Data) => x[4] ? x[3] / x[4] ** 0.8 : 0;
 
@@ -32,7 +32,7 @@ export default () => {
         .sort((a, b) => getScore(b) - getScore(a));
     if (sort) results.sort((a, b) => b[4] - a[4]);
     return <>
-        <label>Sort by: <select defaultValue={sort} onChange={e => setSort(e.target.selectedIndex)}>{sortBy.map((x, i) => <option key={i} value={i}>{x[0].toUpperCase()}{x.slice(1)}</option>)}</select></label>
+        <label>Sort by: <select defaultValue={sort} onChange={e => setSort(e.target.selectedIndex)}>{renderSortBy(sortBy)}</select></label>
         {filters.map((x, i) => <Fragment key={i}>
             <br/>
             <label>Filter by {x[0]} (seperated by semicolons): <input defaultValue={x[1].join('; ')} key={forcedChanges} onInput={e => x[2]((e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x))}/></label>
