@@ -134,7 +134,7 @@ export default class {
                 }
             }
             if (common) for (const x of unknown) {
-                map[x.id] = (map[x.id] || 0) + score / common * x.rating;
+                map[x.id] = (map[x.id] || 0) + score / common ** 0.7 * x.rating;
             }
         }
         return this.resolveMap(map, 50, await this.getCollections(true));
