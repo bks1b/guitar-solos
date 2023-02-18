@@ -52,7 +52,7 @@ export default () => {
                         <Ratings sum={x[3]} count={x[4]}/>
                     </div>
                 </div>)
-                : 'No matching solos found.'
+                : <h2>No matching solos found.</h2>
         }
     </>;
 };
