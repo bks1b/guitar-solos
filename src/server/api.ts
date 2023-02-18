@@ -1,5 +1,5 @@
 import { Router, Request, RequestHandler } from 'express';
-import { User } from '../types';
+import { Solo, User } from '../types';
 import Database from './Database';
 import { hash } from './util';
 
@@ -85,15 +85,13 @@ export default Router()
     .post('/rate', handler(async (req, u) => {
         if (typeof req.body?.id !== 'string') throw 'Rating "id" expected.';
         if (!checkInt(req.body?.rating) || req.body.rating > 10) throw 'Rating "rating" expected to be an integer between 0 and 10 (inclusive).';
-        await db.getBaseSolo(req.body.id);
+        if (!await (await db.db).collection<Solo>('solos').findOne({ id: req.body.id })) throw 'Solo not found.';
         await db.editUser(getHeader(req), { $set: { ratings: [...u.ratings.filter(x => x.id !== req.body.id), { id: req.body.id, rating: req.body.rating }] } });
     }, true))
     .post('/discover', handler((_, u) => db.discover(u), true))
     .post('/profile', handler(async req => {
         if (typeof req.body?.name !== 'string') throw 'User "name" expected.';
-        const user = await db.getUser(req.body.name);
-        if (!user) throw 'User not found.';
-        return [user.name, await Promise.all(user.ratings.map(async x => [...await db.getSolo(x.id), x.rating]))];
+        return db.getProfile(req.body.name);
     }))
     .post('/search', handler(req => {
         if (!req.body?.str || typeof req.body?.str !== 'string') throw 'Search "str" expected.';
