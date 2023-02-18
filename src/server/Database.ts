@@ -1,10 +1,10 @@
-import { Db, MongoClient, UpdateFilter } from 'mongodb';
+import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
 import { compareTwoStrings } from 'string-similarity';
 import { Album, Data, Rating, Solo, Song, User } from '../types';
 import { hash } from './util';
 
 export default class {
-    private db: Promise<Db>;
+    db: Promise<Db>;
     constructor() {
         const client = new MongoClient(process.env.MONGO_URI!);
         this.db = client.connect().then(() => client.db('song_list'));
@@ -17,12 +17,16 @@ export default class {
         return count.toString(16);
     }
 
-    private resolveMap(map: Record<string, number>, max: number) {
-        return Promise.all(Object
+    private resolveMap(map: Record<string, number>, max: number, data: Collections) {
+        return Object
             .entries(map)
             .sort((a, b) => b[1] - a[1])
             .slice(0, max)
-            .map(x => this.getSolo(x[0])));
+            .map(x => this.getSolo(x[0], data));
+    }
+
+    private getCollections(solos = false, users = false) {
+        return <Promise<Collections>>Promise.all(['albums', 'songs', ...solos ? ['solos'] : [], ...users ? ['users'] : []].map(async x => (await this.db).collection(x).find().toArray()));
     }
 
     async getCredentials(auth: string[]) {
@@ -71,12 +75,6 @@ export default class {
         return (await this.db).collection<Solo>('solos').insertOne({ ...data, id: await this.getCount('solos') });
     }
 
-    async getBaseSolo(id: string) {
-        const data = await (await this.db).collection<Solo>('solos').findOne({ id });
-        if (!data) throw 'Solo not found.';
-        return data;
-    }
-
     async getAlbum(id: string) {
         const album = await (await this.db).collection<Album>('albums').findOne({ id });
         if (!album) throw 'Album not found.';
@@ -84,13 +82,13 @@ export default class {
     }
 
     async getSong(id: string, user?: User) {
-        const song = await (await this.db).collection<Song>('songs').findOne({ id });
+        const [albums, songs, solos, users] = await this.getCollections(true, true);
+        const song = songs.find(x => x.id === id);
         if (!song) throw 'Song not found.';
-        const users = await (await this.db).collection<User>('users').find().toArray();
         return [
             song,
-            await (await this.db).collection<Album>('albums').findOne({ id: song.album }),
-            await Promise.all((await (await this.db).collection<Solo>('solos').find({ song: id }).toArray()).map(async s => {
+            albums.find(x => x.id === song.album),
+            solos.filter(x => x.song === song.id).map(s => {
                 let sum = 0;
                 let count = 0;
                 const map: Record<string, number> = {};
@@ -102,16 +100,22 @@ export default class {
                         for (const x of u.ratings.filter(x => x.id !== s.id)) map[x.id] = (map[x.id] || 0) + x.rating * rating.rating;
                     }
                 }
-                return [s, await this.resolveMap(map, 5), sum, count, user?.ratings.find(x => x.id === s.id)?.rating];
-            })),
+                return [s, this.resolveMap(map, 5, [albums, songs, solos, users]), sum, count, user?.ratings.find(x => x.id === s.id)?.rating];
+            }),
         ];
     }
 
-    async getSolo(id: string) {
-        const solo = await this.getBaseSolo(id);
-        const song = await (await this.db).collection<Song>('songs').findOne({ id: solo.song });
-        const album = await (await this.db).collection<Album>('albums').findOne({ id: song.album });
-        return [solo, song, album];
+    getSolo(id: string, [albums, songs, solos]: Collections) {
+        const solo = solos.find(x => x.id === id);
+        const song = songs.find(x => x.id === solo.song);
+        return [solo, song, albums.find(x => x.id === song.album)];
+    }
+
+    async getProfile(name: string) {
+        const user = await this.getUser(name);
+        if (!user) throw 'User not found.';
+        const data = await this.getCollections(true);
+        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating])]
     }
 
     async discover(user: User) {
@@ -133,12 +137,11 @@ export default class {
                 map[x.id] = (map[x.id] || 0) + score / common * x.rating;
             }
         }
-        return this.resolveMap(map, 50);
+        return this.resolveMap(map, 50, await this.getCollections(true));
     }
 
     async search(str: string) {
-        const albums = await (await this.db).collection<Album>('albums').find().toArray();
-        const songs = await (await this.db).collection<Song>('songs').find().toArray();
+        const [albums, songs] = await this.getCollections();
         const matches = [albums, songs].map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
             .filter(x => x[1] > 0.25)
@@ -151,10 +154,7 @@ export default class {
     }
 
     async getCharts() {
-        const albums = await (await this.db).collection<Album>('albums').find().toArray();
-        const songs = await (await this.db).collection<Song>('songs').find().toArray();
-        const solos = await (await this.db).collection<Solo>('solos').find().toArray();
-        const users = await (await this.db).collection<User>('users').find().toArray();
+        const [albums, songs, solos, users] = await this.getCollections(true, true);
         return solos.map(s => {
             const ratings = users.map(x => x.ratings.find(x => x.id === s.id)).filter(x => x);
             const song = songs.find(x => x.id === s.song);
@@ -162,3 +162,5 @@ export default class {
         });
     }
 }
+
+type Collections = [WithId<Album>[], WithId<Song>[], WithId<Solo>[], WithId<User>[]];
