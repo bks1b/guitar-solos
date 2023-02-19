@@ -115,7 +115,7 @@ export default class {
         const user = await this.getUser(name);
         if (!user) throw 'User not found.';
         const data = await this.getCollections(true);
-        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating])]
+        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating])];
     }
 
     async discover(user: User) {
