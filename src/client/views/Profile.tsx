@@ -18,26 +18,30 @@ export default ({ name }: { name: string; }) => {
         ? <>
             <h1 className='center'>{user[0]}</h1>
             <a>{user[1].length} solos rated</a>
-            <table>
-                <thead><tr>
-                    <th>Rating</th>
-                    <th>Count</th>
-                    <th>Percentage</th>
-                </tr></thead>
-                <tbody>{Array.from({ length: 11 }, (_, i) => {
-                    const n = user[1].filter(x => x[3] === i).length;
-                    return n
-                        ? <tr key={i}>
-                            <td>{i}/10</td>
-                            <td>{n}</td>
-                            <td>
-                                <div style={{ width: n / user[1].length * 250 }} className='bar'>&nbsp;</div>
-                                <a>{+(n / user[1].length).toFixed(1)}%</a>
-                            </td>
-                        </tr>
-                        : null;
-                })}</tbody>
-            </table>
+            {
+                user[1].length
+                    ? <table>
+                        <thead><tr>
+                            <th>Rating</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr></thead>
+                        <tbody>{Array.from({ length: 11 }, (_, i) => {
+                            const n = user[1].filter(x => x[3] === i).length;
+                            return n
+                                ? <tr key={i}>
+                                    <td>{i}/10</td>
+                                    <td>{n}</td>
+                                    <td>
+                                        <div style={{ width: n / user[1].length * 250 }} className='bar'>&nbsp;</div>
+                                        <a>{+(n / user[1].length * 100).toFixed(1)}%</a>
+                                    </td>
+                                </tr>
+                                : null;
+                        })}</tbody>
+                    </table>
+                    : ''
+            }
             <label style={{ display: 'block', marginBottom: 'var(--content-padding)' }}>Sort by: <select defaultValue={sort} onChange={e => {
                 setSort(e.target.selectedIndex);
                 window.history.pushState('', '', window.location.pathname + (e.target.selectedIndex ? '?sort=' + sortBy[e.target.selectedIndex] : ''));
