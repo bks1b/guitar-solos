@@ -3,7 +3,7 @@ import Albums from '../components/Albums';
 import { MainContext, Solos } from '../util';
 
 export default ({ str }: { str: string; }) => {
-    const { request } = useContext(MainContext);
+    const { request } = useContext(MainContext)!;
     const [data, setData] = useState<Solos[]>();
     useEffect(() => {
         document.title = 'Search | Guitar Solos';

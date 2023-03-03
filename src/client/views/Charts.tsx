@@ -7,7 +7,7 @@ import { getTimestamp, MainContext, updateParams } from '../util';
 const getScore = (x: Data) => x[4] ? x[3] / x[4] ** 0.8 : 0;
 
 export default () => {
-    const { request, navigate } = useContext(MainContext);
+    const { request, navigate } = useContext(MainContext)!;
     const params = new URLSearchParams(window.location.search);
     const [data, setData] = useState<Data[]>();
     const [sortState, sortDispatch] = getReducer(['score', 'popularity', 'length', 'year']);
