@@ -162,6 +162,10 @@ button:hover {
     align-items: center;
 }
 
+.chart {
+    margin-top: var(--content-padding);
+}
+
 .albumInfo:not(.chart) {
     justify-content: center;
 }

@@ -5,7 +5,10 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 
 export const MainContext = createContext<Ctx>(null);
 
-export const renderSortBy = (a: string[]) => a.map((x, i) => <option key={i} value={i}>{x[0].toUpperCase()}{x.slice(1)}</option>);
+export const updateParams = (arr: string[][]) => {
+    const path = window.location.pathname + (arr.length ? '?' + new URLSearchParams(Object.fromEntries(arr)) : '');
+    if (window.location.pathname + window.location.search !== path) window.history.pushState('', '', path);
+};
 
 export const getSecs = (m: MutableRefObject<HTMLInputElement>, s: MutableRefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
