@@ -3,12 +3,12 @@ import { Album, Song } from '../../types';
 import { MainContext } from '../util';
 
 export default ({ id }: { id: string; }) => {
-    const { request, navigate, loggedIn } = useContext(MainContext);
+    const { request, navigate, loggedIn } = useContext(MainContext)!;
     const [reload] = useState(0);
     const [album, setAlbum] = useState<[Album, Song[]]>();
-    const name = useRef<HTMLInputElement>();
-    const genres = useRef<HTMLInputElement>();
-    const yt = useRef<HTMLInputElement>();
+    const name = useRef<HTMLInputElement>(null);
+    const genres = useRef<HTMLInputElement>(null);
+    const yt = useRef<HTMLInputElement>(null);
     useEffect(() => {
         request<[Album, Song[]]>('/get/album', { id }, x => setAlbum(x));
     }, [reload]);

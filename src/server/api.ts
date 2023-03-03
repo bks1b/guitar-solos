@@ -23,7 +23,7 @@ const getUser = async (auth: string[]) => {
 
 const handler = (fn: (req: Request, u: User) => any, u?: boolean): RequestHandler => async (req, res) => {
     try {
-        res.json(await fn(req, u ? await getUser(getHeader(req)) : undefined) || {});
+        res.json(await fn(req, u ? await getUser(getHeader(req)) : undefined!) || {});
     } catch (e) {
         res.json({ error: e + '' });
     }
@@ -60,12 +60,12 @@ export default Router()
         if (typeof req.body?.album !== 'string') throw 'Song "album" expected.';
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Song "name" expected.';
         if (typeof req.body?.youtube !== 'string' || !req.body.youtube.trim()) throw 'Song "youtube" (video ID) expected.';
-        if (!Array.isArray(req.body?.genres) || !req.body.genres.filter(x => x.trim()).length) throw 'Song "genres" expected.';
+        if (!Array.isArray(req.body?.genres) || !(req.body.genres as string[]).filter(x => x.trim()).length) throw 'Song "genres" expected.';
         return db.addSong({
             album: req.body.album,
             name: req.body.name.trim(),
             youtube: req.body.youtube.trim(),
-            genres: req.body.genres.map(x => x.trim().toLowerCase()),
+            genres: (req.body.genres as string[]).map(x => x.trim().toLowerCase()),
         });
     }, true))
     .post('/add/solo', handler(async req => {

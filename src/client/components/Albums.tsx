@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { getTimestamp, MainContext, Solos } from '../util';
 
 export default ({ arr, ratings, album, ts }: { arr: Solos; ratings?: boolean; album?: boolean; ts?: boolean; }) => {
-    const { navigate } = useContext(MainContext);
+    const { navigate } = useContext(MainContext)!;
     return <div className='smallAlbums'>{arr.map((x, i) => <div key={i}>
         <img src={x[2].cover} className='link' onClick={() => navigate(['album', x[2].id])}/>
         <h3 onClick={() => navigate([album ? 'album' : 'song', x[album ? 2 : 1].id])} className='link'>{x[album ? 2 : 1].name}</h3>

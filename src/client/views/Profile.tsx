@@ -4,7 +4,7 @@ import Sort, { getReducer } from '../components/Sort';
 import { MainContext, Solos, updateParams } from '../util';
 
 export default ({ name }: { name: string; }) => {
-    const { request } = useContext(MainContext);
+    const { request } = useContext(MainContext)!;
     const [user, setUser] = useState<[string, Solos]>();
     const [sortState, sortDispatch] = getReducer(['recency', 'rating', 'length', 'year']);
     useEffect(() => {

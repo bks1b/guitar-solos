@@ -15,7 +15,7 @@ export const getReducer = (arr: string[]) => {
         };
     }, {
         arr,
-        sort: Math.max(arr.indexOf(params.get('sort')), 0),
+        sort: Math.max(arr.indexOf(params.get('sort')!), 0),
         order: +(params.get('order') !== orderBy[0]),
         params: [...params],
     });

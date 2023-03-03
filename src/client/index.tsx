@@ -36,13 +36,13 @@ const App = () => {
     const [sidebar, setSidebar] = useState(!isMobile);
     const [popup, setPopup] = useState<false | 'login' | 'signup' | 'edit'>(false);
     const [wait, setWait] = useState(!!localStorage.getItem('auth'));
-    const username = useRef<HTMLInputElement>();
-    const password = useRef<HTMLInputElement>();
-    const search = useRef<HTMLInputElement>();
+    const username = useRef<HTMLInputElement>(null);
+    const password = useRef<HTMLInputElement>(null);
+    const search = useRef<HTMLInputElement>(null);
     useEffect(() => {
         window.onpopstate = () => setPath(getPath());
         try {
-            const auth = JSON.parse(localStorage.getItem('auth'));
+            const auth = JSON.parse(localStorage.getItem('auth')!);
             if (auth) request<string>('/auth/login', auth, name => setUser({ loggedIn: true, auth, name }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
         } catch {
             setWait(false);
@@ -136,4 +136,4 @@ const App = () => {
         </MainContext.Provider>;
 };
 
-createRoot(document.getElementById('root')).render(<App/>);
+createRoot(document.getElementById('root')!).render(<App/>);

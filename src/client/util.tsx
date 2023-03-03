@@ -1,16 +1,16 @@
-import { createContext, MutableRefObject } from 'react';
+import { createContext, RefObject } from 'react';
 import { Album, Solo, Song } from '../types';
 
 export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-export const MainContext = createContext<Ctx>(null);
+export const MainContext = createContext<Ctx | null>(null);
 
 export const updateParams = (arr: string[][]) => {
     const path = window.location.pathname + (arr.length ? '?' + new URLSearchParams(Object.fromEntries(arr)) : '');
     if (window.location.pathname + window.location.search !== path) window.history.pushState('', '', path);
 };
 
-export const getSecs = (m: MutableRefObject<HTMLInputElement>, s: MutableRefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
+export const getSecs = (m: RefObject<HTMLInputElement>, s: RefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
 
 type Ctx = {

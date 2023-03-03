@@ -106,8 +106,8 @@ export default class {
     }
 
     getSolo(id: string, [albums, songs, solos]: Collections) {
-        const solo = solos.find(x => x.id === id);
-        const song = songs.find(x => x.id === solo.song);
+        const solo = solos.find(x => x.id === id)!;
+        const song = songs.find(x => x.id === solo.song)!;
         return [solo, song, albums.find(x => x.id === song.album)];
     }
 
@@ -142,7 +142,7 @@ export default class {
 
     async search(str: string) {
         const [albums, songs] = await this.getCollections();
-        const matches = [albums, songs].map(arr => arr
+        const matches = ([albums, songs] as unknown as { lowerName: string; }[][]).map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
             .filter(x => x[1] > 0.25)
             .sort((a, b) => b[1] - a[1])
@@ -157,8 +157,8 @@ export default class {
         const [albums, songs, solos, users] = await this.getCollections(true, true);
         return solos.map(s => {
             const ratings = users.map(x => x.ratings.find(x => x.id === s.id)).filter(x => x);
-            const song = songs.find(x => x.id === s.song);
-            return [s, song, albums.find(x => x.id === song.album), ratings.reduce((a, b) => a + b.rating, 0), ratings.length];
+            const song = songs.find(x => x.id === s.song)!;
+            return [s, song, albums.find(x => x.id === song.album), ratings.reduce((a, b) => a + b!.rating, 0), ratings.length];
         });
     }
 }

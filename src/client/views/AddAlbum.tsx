@@ -2,8 +2,8 @@ import { useContext, useEffect, useRef } from 'react';
 import { MainContext } from '../util';
 
 export default () => {
-    const { request, navigate } = useContext(MainContext);
-    const refs = ['name', 'artist', 'year', 'cover'].map(k => [k, useRef<HTMLInputElement>()] as const);
+    const { request, navigate } = useContext(MainContext)!;
+    const refs = ['name', 'artist', 'year', 'cover'].map(k => [k, useRef<HTMLInputElement>(null)] as const);
     useEffect(() => {
         document.title = 'Add album | Guitar Solos';
     }, []);
