@@ -47,12 +47,11 @@ export default Router()
     .post('/add/album', handler(req => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Album "name" expected.';
         if (typeof req.body?.artist !== 'string' || !req.body.artist.trim()) throw 'Album "artist" expected.';
-        if (typeof req.body?.cover !== 'string' || !req.body.cover.trim()) throw 'Album "cover" expected.';
         if (!checkInt(req.body?.year)) throw 'Album "year" expected to be a positive integer.';
         return db.addAlbum({
             name: req.body.name.trim(),
             artist: req.body.artist.trim(),
-            cover: req.body.cover.trim(),
+            cover: req.body.cover?.trim() || '/cover.png',
             year: req.body.year,
         });
     }, true))

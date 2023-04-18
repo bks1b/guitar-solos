@@ -40,9 +40,9 @@ export default ({ id }: { id: string; }) => {
                         <h1>Add song</h1>
                         <label>Name: <input ref={name}/></label>
                         <br/>
-                        <label>Genres (seperated by commas): <input ref={genres}/></label>
+                        <label>Genres: <input ref={genres} placeholder='Separated by ,'/></label>
                         <br/>
-                        <label>YouTube ID (official audio): <input ref={yt}/></label>
+                        <label>YouTube ID: <input ref={yt}/> (high quality, no music videos, preferably official audio)</label>
                         <br/>
                         <button onClick={() => request<{ id: string; }>('/add/song', {
                             name: name.current!.value,
