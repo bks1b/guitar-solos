@@ -29,6 +29,20 @@ body {
     .smallAlbums img {
         width: var(--small-cover);
     }
+
+    :is(.albumInfo.chart, .smallAlbums) .link {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .albumInfo.chart .link {
+        max-width: 400px;
+    }
+
+    .smallAlbums .link {
+        max-width: 225px;
+    }
 }
 
 @media only screen and (max-width: 600px) {
