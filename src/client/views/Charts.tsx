@@ -30,7 +30,7 @@ export default () => {
         <Sort state={sortState} dispatch={sortDispatch}/>
         {filters.map((x, i) => <Fragment key={i}>
             {i ? <br/> : ''}
-            <label>Filter by {x[0]}: <input placeholder='Seperated by ;' defaultValue={x[2].join('; ')} key={forcedChanges} onInput={e => x[3]((e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x))}/></label>
+            <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[2].join('; ')} key={forcedChanges} onInput={e => x[3]((e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x))}/></label>
         </Fragment>)}
         {
             results.length
