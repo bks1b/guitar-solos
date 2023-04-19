@@ -8,6 +8,7 @@ import Discover from './views/Discover';
 import Profile from './views/Profile';
 import Search from './views/Search';
 import Song from './views/Song';
+import Stats from './views/Stats';
 
 const App = () => {
     const request: RequestFn = (str, body, cb, err) => fetch('/api' + str, {
@@ -93,6 +94,7 @@ const App = () => {
                             {([
                                 ...user.loggedIn ? [[user.name, ['profile', user.name]]] : [],
                                 ['Charts', []],
+                                ['Stats', ['stats']],
                                 ...user.loggedIn ? [
                                     ['Discover', ['discover']],
                                     ['Add album', ['add', 'album']],
@@ -128,8 +130,12 @@ const App = () => {
                                         : path[0] === 'search'
                                             ? <Search str={path[1]}/>
                                             : undefined
-                        : path[0] === 'discover' && path.length === 1 && user.loggedIn
-                            ? <Discover/>
+                        : path.length === 1
+                            ? path[0] === 'discover' && user.loggedIn
+                                ? <Discover/>
+                                : path[0] === 'stats'
+                                    ? <Stats/>
+                                    : undefined
                             : path.length ? undefined : <Charts/>) || <h1>Page not found.</h1>
                 }</div></div>
             </div>

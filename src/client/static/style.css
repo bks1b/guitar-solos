@@ -245,3 +245,7 @@ th, td {
 a[href] {
     color: black;
 }
+
+ul {
+    margin: 0px;
+}

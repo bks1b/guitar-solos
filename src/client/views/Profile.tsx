@@ -2,13 +2,14 @@ import { useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
 import Sort, { getReducer } from '../components/Sort';
 import { MainContext, Solos, updateParams } from '../util';
+import RatingTable from '../components/RatingTable';
 
 export default ({ name }: { name: string; }) => {
     const { request } = useContext(MainContext)!;
-    const [user, setUser] = useState<[string, Solos]>();
+    const [user, setUser] = useState<[string, Solos, number[][]]>();
     const [sortState, sortDispatch] = getReducer(['recency', 'rating', 'length', 'year']);
     useEffect(() => {
-        request<[string, Solos]>('/profile', { name }, x => setUser(x));
+        request<[string, Solos, number[][]]>('/profile', { name }, x => setUser(x));
     }, []);
     useEffect(() => {
         if (user) document.title = `${user[0]} | Guitar Solos`;
@@ -25,26 +26,7 @@ export default ({ name }: { name: string; }) => {
         <a>{user[1].length} solos rated</a>
         {
             user[1].length
-                ? <table>
-                    <thead><tr>
-                        <th>Rating</th>
-                        <th>Count</th>
-                        <th>Percentage</th>
-                    </tr></thead>
-                    <tbody>{Array.from({ length: 11 }, (_, i) => {
-                        const n = user[1].filter(x => x[3] === i).length;
-                        return n
-                            ? <tr key={i}>
-                                <td>{i}/10</td>
-                                <td>{n}</td>
-                                <td>
-                                    <div style={{ width: n / user[1].length * 250 }} className='bar'>&nbsp;</div>
-                                    <a>{+(n / user[1].length * 100).toFixed(1)}%</a>
-                                </td>
-                            </tr>
-                            : null;
-                    })}</tbody>
-                </table>
+                ? <RatingTable data={user[2]}/>
                 : ''
         }
         <div style={{ marginBottom: 'var(--content-padding)' }}><Sort state={sortState} dispatch={sortDispatch}/></div>
