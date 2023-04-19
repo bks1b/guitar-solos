@@ -10,6 +10,7 @@ export const updateParams = (arr: string[][]) => {
     if (window.location.pathname + window.location.search !== path) window.history.pushState('', '', path);
 };
 
+export const toFixed = (n: number) => +n.toFixed(1);
 export const getSecs = (m: RefObject<HTMLInputElement>, s: RefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
 

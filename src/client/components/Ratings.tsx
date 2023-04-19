@@ -1,8 +1,10 @@
+import { toFixed } from '../util';
+
 export default ({ sum, count }: Record<'sum' | 'count', number>) => <>
     {
         count
             ? <>
-                <a>Average rating: {+(sum / count).toFixed(1)}/10</a>
+                <a>Average rating: {toFixed(sum / count)}/10</a>
                 <br/>
             </>
             : ''

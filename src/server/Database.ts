@@ -1,7 +1,7 @@
 import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
 import { compareTwoStrings } from 'string-similarity';
 import { Album, Data, Rating, Solo, Song, User } from '../types';
-import { hash } from './util';
+import { getRatings, getScore, hash } from './util';
 
 export default class {
     db: Promise<Db>;
@@ -115,7 +115,7 @@ export default class {
         const user = await this.getUser(name);
         if (!user) throw 'User not found.';
         const data = await this.getCollections(true);
-        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating])];
+        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating]), getRatings(user.ratings.map(x => x.rating))];
     }
 
     async discover(user: User) {
@@ -160,6 +160,27 @@ export default class {
             const song = songs.find(x => x.id === s.song)!;
             return [s, song, albums.find(x => x.id === song.album), ratings.reduce((a, b) => a + b!.rating, 0), ratings.length];
         });
+    }
+
+    async getStats() {
+        const [albums, songs, solos, users] = await this.getCollections(true, true);
+        const artists = [...new Set(albums.map(x => x.artist))];
+        const ratings = users.flatMap(x => x.ratings);
+        const albumScores = albums.map(x => {
+            const ids = songs.filter(s => s.album === x.id).map(s => s.id);
+            const arr = solos.filter(x => ids.includes(x.song));
+            return <const>[x, ids.length, arr.length, arr.flatMap(s => ratings.filter(r => r.id === s.id).map(r => r.rating))];
+        });
+        return {
+            total: [users.length, artists.length, albums.length, songs.length, solos.length],
+            ratings: getRatings(ratings.map(x => x.rating)),
+            albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]).sort((a, b) => b[3] - a[3]),
+            artists: artists.map(x => {
+                const arr = albumScores.filter(a => a[0].artist === x);
+                const scores = arr.flatMap(a => a[3]);
+                return <const>[x, arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(scores), arr.length];
+            }).sort((a, b) => b[3] - a[3]),
+        };
     }
 }
 

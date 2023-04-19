@@ -97,6 +97,7 @@ export default Router()
         return db.search(req.body.str);
     }))
     .post('/charts', handler(() => db.getCharts()))
+    .post('/stats', handler(() => db.getStats()))
     .get('/backup', (req, res, next) => {
         if (req.query.auth !== process.env.PASSWORD) return next();
         res.setHeader('content-type', 'application/json');
