@@ -1,7 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
-import { MainContext, toFixed } from '../util';
+import { MainContext, getTimestamp, toFixed } from '../util';
 import RatingTable from '../components/RatingTable';
 import { Album } from '../../types';
+
+const keys = ['solo', 'song', 'album', 'artist'];
 
 export default () => {
     const { request, navigate } = useContext(MainContext)!;
@@ -14,14 +16,13 @@ export default () => {
         ? <>
             <h1>Stats</h1>
             <a>Total:</a>
-            <ul>{['users', 'artists', 'albums', 'songs', 'solos'].map((x, i) => <li key={i}>{data.total[i]} {x}</li>)}</ul>
+            <ul>{['user', ...keys].map((x, i) => <li key={i}>{data.total[i]} {x}s</li>)}</ul>
             <a>Average:</a>
             <ul>
-                <li>{toFixed(data.total[3] / data.total[1])} songs per artist</li>
-                <li>{toFixed(data.total[2] / data.total[1])} albums per artist</li>
-                <li>{toFixed(data.total[3] / data.total[2])} songs per album</li>
+                {keys.slice(0, -1).flatMap((a, i) => keys.slice(i + 1).map((b, j) => <li key={`${i},${j}`}>{toFixed(data.total[i + 1] / data.total[j + i + 2])} {a}s per {b}</li>))}
                 <li>{toFixed(data.ratings.reduce((a, b) => a + b[1], 0) / data.total[0])} solos rated per user</li>
             </ul>
+            <a>Average solo duration: {getTimestamp(Math.round(data.averageDuration))}</a>
             <RatingTable data={data.ratings}/>
             <h1>Highest rated albums</h1>
             {data.albums.map((x, i) => <div key={i} className='albumInfo chart'>
@@ -50,6 +51,7 @@ export default () => {
 type Stats = {
     total: number[];
     ratings: number[][];
+    averageDuration: number;
     albums: [Album, number, number, number, number, number][];
     artists: [string, number, number, number, number, number, number][];
 };
