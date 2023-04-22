@@ -172,8 +172,9 @@ export default class {
             return <const>[x, ids.length, arr.length, arr.flatMap(s => ratings.filter(r => r.id === s.id).map(r => r.rating))];
         });
         return {
-            total: [users.length, artists.length, albums.length, songs.length, solos.length],
+            total: [users.length, solos.length, songs.length, albums.length, artists.length],
             ratings: getRatings(ratings.map(x => x.rating)),
+            averageDuration: solos.reduce((a, b) => a + b.end - b.start, 0) / solos.length,
             albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]).sort((a, b) => b[3] - a[3]),
             artists: artists.map(x => {
                 const arr = albumScores.filter(a => a[0].artist === x);
