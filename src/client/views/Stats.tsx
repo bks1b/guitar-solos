@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { MainContext, getTimestamp, toFixed } from '../util';
 import RatingTable from '../components/RatingTable';
 import { Album } from '../../types';
+import List from '../components/List';
 
 const keys = ['solo', 'song', 'album', 'artist'];
 
@@ -25,7 +26,7 @@ export default () => {
             <a>Average solo duration: {getTimestamp(Math.round(data.averageDuration))}</a>
             <RatingTable data={data.ratings}/>
             <h1>Highest rated albums</h1>
-            {data.albums.map((x, i) => <div key={i} className='albumInfo chart'>
+            <List arr={data.albums.map((x, i) => <div key={i} className='albumInfo chart'>
                 <h2>{i + 1}.</h2>
                 <img src={x[0].cover} className='link' onClick={() => navigate(['album', x[0].id])}/>
                 <div>
@@ -35,15 +36,15 @@ export default () => {
                     <br/>
                     <a>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</a>
                 </div>
-            </div>)}
+            </div>)}/>
             <h1>Highest rated artists</h1>
-            {data.artists.map((x, i) => <div key={i}>
+            <List arr={data.artists.map((x, i) => <div key={i}>
                 <h3>{i + 1}. <a className='link' onClick={() => navigate([], [['artists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
                 <ul>
                     <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
                     <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
                 </ul>
-            </div>)}
+            </div>)}/>
         </>
         : <></>;
 };
