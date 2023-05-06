@@ -249,3 +249,7 @@ a[href] {
 ul {
     margin: 0px;
 }
+
+.listBtn {
+    margin: var(--content-padding) var(--content-padding) 0px 0px;
+}
