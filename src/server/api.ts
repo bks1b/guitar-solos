@@ -1,4 +1,5 @@
 import { Router, Request, RequestHandler } from 'express';
+import fetch from 'node-fetch';
 import { Solo, User } from '../types';
 import Database from './Database';
 import { hash } from './util';
@@ -98,6 +99,7 @@ export default Router()
     }))
     .post('/charts', handler(() => db.getCharts()))
     .post('/stats', handler(() => db.getStats()))
+    .post('/genius', handler(req => fetch('https://genius.com/api/search/album?page=1&q=' + req.body.query).then(d => d.json()).then(d => d.response.sections[0].hits.map((x: any) => [x.result.name, x.result.artist.name, x.result.release_date_components?.year, x.result.cover_art_url?.replace(/\.\d+x\d+/, '.300x300')]))))
     .get('/backup', (req, res, next) => {
         if (req.query.auth !== process.env.PASSWORD) return next();
         res.setHeader('content-type', 'application/json');
