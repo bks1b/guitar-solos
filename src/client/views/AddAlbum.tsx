@@ -14,7 +14,7 @@ export default () => {
         <br/>
         <label>Year: <input type='number' ref={refs[2][1]}/></label>
         <br/>
-        <label>Cover URL: <input ref={refs[3][1]}/> (preferably 300px*300px from <a href='https://genius.com/' target='_blank'>Genius</a>, leave empty if NSFW)</label>
+        <label>Cover URL: <input ref={refs[3][1]}/></label>
         <br/>
         <button onClick={() => request<{ id: string; }>('/add/album', Object.fromEntries(refs.map((x, i) => [x[0], i === 2 ? +x[1].current!.value : x[1].current!.value])), d => navigate(['album', d.id]))}>Add</button>
     </>;
