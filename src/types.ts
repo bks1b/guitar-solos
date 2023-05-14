@@ -7,6 +7,7 @@ export type User = {
     name: string;
     password: string;
     ratings: Rating[];
+    admin?: boolean;
 };
 
 export type Album = {

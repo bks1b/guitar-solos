@@ -33,6 +33,7 @@ const App = () => {
         loggedIn: boolean;
         auth?: string[];
         name?: string;
+        admin?: boolean;
     }>({ loggedIn: false });
     const [path, setPath] = useState(getPath());
     const [sidebar, setSidebar] = useState(!isMobile);
@@ -45,14 +46,14 @@ const App = () => {
         window.onpopstate = () => setPath(getPath());
         try {
             const auth = JSON.parse(localStorage.getItem('auth')!);
-            if (auth) request<string>('/auth/login', auth, name => setUser({ loggedIn: true, auth, name }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
+            if (auth) request<[string, boolean]>('/auth/login', auth, ([name, admin]) => setUser({ loggedIn: true, auth, name, admin }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
         } catch {
             setWait(false);
         }
     }, []);
     return wait
         ? <></>
-        : <MainContext.Provider value={{ request, navigate, loggedIn: user.loggedIn }}>
+        : <MainContext.Provider value={{ request, navigate, loggedIn: user.loggedIn, admin: user.admin! }}>
             {
                 popup
                     ? <div className='popupContainer' onClick={e => {

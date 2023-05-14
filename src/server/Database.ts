@@ -183,6 +183,29 @@ export default class {
             }).sort((a, b) => b[3] - a[3]),
         };
     }
+
+    async edit(entry: string[], data: any) {
+        (await this.db).collection(entry[0]).updateOne({ id: entry[1] }, { $set: data });
+    }
+
+    async deleteAlbum(id: string) {
+        const songs = await (await this.db).collection<Song>('songs').find({ album: id }).toArray();
+        for (const s of songs) await this.deleteSong(s.id);
+        await (await this.db).collection('albums').deleteOne({ id });
+    }
+
+    async deleteSong(id: string) {
+        const solos = await (await this.db).collection<Solo>('solos').find({ song: id }).toArray();
+        for (const s of solos) await this.deleteSolo(s.id);
+        await (await this.db).collection('songs').deleteOne({ id });
+    }
+
+    async deleteSolo(id: string) {
+        const usersColl = (await this.db).collection<User>('users');
+        const users = await usersColl.find({ 'ratings.id': id }).toArray();
+        for (const u of users) await usersColl.updateOne({ name: u.name }, { $set: { ratings: u.ratings.filter(r => r.id !== id) } });
+        await (await this.db).collection('solos').deleteOne({ id });
+    }
 }
 
 type Collections = [WithId<Album>[], WithId<Song>[], WithId<Solo>[], WithId<User>[]];

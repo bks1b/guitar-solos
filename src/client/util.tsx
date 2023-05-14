@@ -16,6 +16,7 @@ export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + ''
 
 type Ctx = {
     loggedIn: boolean;
+    admin: boolean;
     request: RequestFn;
     navigate: (x: string[], q?: string[][]) => void;
 };

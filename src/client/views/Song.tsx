@@ -7,14 +7,16 @@ import { getSecs, getTimestamp, MainContext, Solos } from '../util';
 const TimeInput = ({ _ref, sec }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; }) => <input type='number' min={0} max={sec ? 59 : undefined} className='num' ref={_ref}/>;
 
 export default ({ id }: { id: string; }) => {
-    const { request, navigate, loggedIn } = useContext(MainContext)!;
+    const { request, navigate, loggedIn, admin } = useContext(MainContext)!;
     const [reload, setReload] = useState(0);
     const [song, setSong] = useState<[Song, Album, [Solo, Solos, number, number, number][]]>();
     const startM = useRef<HTMLInputElement>(null);
     const startS = useRef<HTMLInputElement>(null);
     const endM = useRef<HTMLInputElement>(null);
     const endS = useRef<HTMLInputElement>(null);
+    const edit = useRef<HTMLTextAreaElement>(null);
     const ratings: Record<string, HTMLInputElement> = {};
+    const solos: Record<string, HTMLInputElement> = {};
     useEffect(() => {
         request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song', { id }, x => setSong(x));
     }, [reload]);
@@ -33,6 +35,26 @@ export default ({ id }: { id: string; }) => {
             </div>
             <a>Genres: {song[0].genres.map((x, i) => <a key={i}><a className='link' onClick={() => navigate([], [['genres', x]])}>{x}</a>{i < song[0].genres.length - 1 ? ', ' : ''}</a>)}</a>
             {
+                admin
+                    ? <>
+                        <br/>
+                        <textarea defaultValue={JSON.stringify({
+                            name: song[0].name,
+                            youtube: song[0].youtube,
+                            genres: song[0].genres,
+                        }, undefined, 4)} ref={edit}/>
+                        <br/>
+                        <div className='row'>
+                            <button onClick={() => {
+                                const d = JSON.parse(edit.current!.value);
+                                request('/admin/edit', { entry: ['songs', song[0].id], data: { ...d, lowerName: d.name.toLowerCase() } }, () => setReload(reload + 1));
+                            }}>Edit</button>
+                            <button onClick={() => request('/admin/delete/song', { id: song[0].id }, () => setReload(reload + 1))}>Delete</button>
+                        </div>
+                    </>
+                    : ''
+            }
+            {
                 song[2].length
                     ? <>
                         <hr/>
@@ -44,7 +66,18 @@ export default ({ id }: { id: string; }) => {
                                     ? <>
                                         <label>Own rating: <input type='number' min={0} max={10} defaultValue={x[4]} ref={e => ratings[x[0].id] = e!} className='num'/>/10</label>
                                         <button className='rate' onClick={() => request('/rate', { id: x[0].id, rating: +ratings[x[0].id].value }, () => setReload(reload + 1))}>Rate</button>
-                                        <br/>
+                                        {
+                                            admin
+                                                ? <div className='row'>
+                                                    <input defaultValue={JSON.stringify([x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)))} ref={e => solos[x[0].id] = e!}/>
+                                                    <button onClick={() => {
+                                                        const d = JSON.parse(solos[x[0].id].value);
+                                                        request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1] } }, () => setReload(reload + 1));
+                                                    }}>Edit</button>
+                                                    <button onClick={() => request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
+                                                </div>
+                                                : ''
+                                        }
                                     </>
                                     : ''
                             }
