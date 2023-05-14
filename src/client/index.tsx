@@ -66,9 +66,9 @@ const App = () => {
                             <br/>
                             <button onClick={async () => {
                                 const auth = [username.current!.value, password.current!.value];
-                                request<string>('/auth/' + popup, auth, name => {
+                                request<[string, boolean]>('/auth/' + popup, auth, ([name, admin]) => {
                                     localStorage.setItem('auth', JSON.stringify(auth));
-                                    setUser({ loggedIn: true, auth, name });
+                                    setUser({ loggedIn: true, auth, name, admin: popup === 'login' ? admin : user.admin });
                                     setPopup(false);
                                 });
                             }}>{popup === 'edit' ? 'Save' : popup === 'login' ? 'Log in' : 'Sign up'}</button>
