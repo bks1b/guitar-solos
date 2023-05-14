@@ -19,6 +19,8 @@ export default () => {
             <ul>
                 <li>There can be other instruments over guitar solos as long as the solo can be clearly heard.</li>
                 <li>Vocals are only allowed over solos if they only take up a small part of the solo, and the solo can be clearly heard.</li>
+                <li>Solos can contain short riffs, but must not only consist of riffs.</li>
+                <li>Ratings must be integers between 0 (unlistenable) and 10 (perfect). Ratings below 5 are negative, ratings above 5 are positive.</li>
             </ul>
             <li>Videos:</li>
             <ul>

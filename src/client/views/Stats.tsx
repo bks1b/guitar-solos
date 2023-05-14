@@ -35,6 +35,7 @@ export default () => {
             </ul>
             <a>Average solo duration: {getTimestamp(Math.round(data.averageDuration))}</a>
             <RatingTable data={data.ratings}/>
+            <a href='https://github.com/bks1b/guitar-solos' target='_blank'>Source code</a>
             <h1>Highest rated albums</h1>
             <List arr={data.albums.map((x, i) => <div key={i} className='albumInfo chart'>
                 <h2>{i + 1}.</h2>
