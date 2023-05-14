@@ -39,12 +39,12 @@ export default Router()
     .post('/auth/signup', handler(async req => {
         checkAuth(req.body);
         await db.addUser(req.body);
-        return req.body[0];
+        return [req.body[0]];
     }))
     .post('/auth/edit', handler(async req => {
         checkAuth(req.body);
         await db.editUser(getHeader(req), { $set: await db.getCredentials(req.body) });
-        return req.body[0].toLowerCase();
+        return [req.body[0].toLowerCase()];
     }))
     .post('/add/album', handler(req => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Album "name" expected.';
