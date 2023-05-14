@@ -253,3 +253,19 @@ ul {
 .listBtn {
     margin: var(--content-padding) var(--content-padding) 0px 0px;
 }
+
+textarea {
+    width: max(500px, 50%);
+    height: 200px;
+}
+
+textarea, input {
+    border: 1px solid black;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 3px;
+}

@@ -33,7 +33,8 @@ const handler = (fn: (req: Request, u: User) => any, u?: boolean): RequestHandle
 export default Router()
     .post('/auth/login', handler(async req => {
         checkAuth(req.body);
-        return (await getUser(req.body)).name;
+        const u = await getUser(req.body);
+        return [u.name, u.admin];
     }))
     .post('/auth/signup', handler(async req => {
         checkAuth(req.body);
@@ -100,9 +101,18 @@ export default Router()
     .post('/charts', handler(() => db.getCharts()))
     .post('/stats', handler(() => db.getStats()))
     .post('/genius', handler(req => fetch('https://genius.com/api/search/album?page=1&q=' + req.body.query).then(d => d.json()).then(d => d.response.sections[0].hits.map((x: any) => [x.result.name, x.result.artist.name, x.result.release_date_components?.year, x.result.cover_art_url?.replace(/\.\d+x\d+/, '.300x300')]))))
-    .get('/backup', (req, res, next) => {
-        if (req.query.auth !== process.env.PASSWORD) return next();
-        res.setHeader('content-type', 'application/json');
-        res.setHeader('content-disposition', 'attachment; filename=solos.json');
-        db.getBackup().then(d => res.json(d));
-    });
+    .post('/admin/backup', handler((_, u) => {
+        if (u.admin) return db.getBackup();
+    }, true))
+    .post('/admin/edit', handler(async (req, u) => {
+        if (u.admin) await db.edit(req.body.entry, req.body.data);
+    }, true))
+    .post('/admin/delete/album', handler(async (req, u) => {
+        if (u.admin) await db.deleteAlbum(req.body.id);
+    }, true))
+    .post('/admin/delete/song', handler(async (req, u) => {
+        if (u.admin) await db.deleteSong(req.body.id);
+    }, true))
+    .post('/admin/delete/solo', handler(async (req, u) => {
+        if (u.admin) await db.deleteSolo(req.body.id);
+    }, true));
