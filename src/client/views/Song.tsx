@@ -49,7 +49,7 @@ export default ({ id }: { id: string; }) => {
                                 const d = JSON.parse(edit.current!.value);
                                 request('/admin/edit', { entry: ['songs', song[0].id], data: { ...d, lowerName: d.name.toLowerCase() } }, () => setReload(reload + 1));
                             }}>Edit</button>
-                            <button onClick={() => request('/admin/delete/song', { id: song[0].id }, () => setReload(reload + 1))}>Delete</button>
+                            <button onClick={() => confirm('Are you sure?') && request('/admin/delete/song', { id: song[0].id }, () => setReload(reload + 1))}>Delete</button>
                         </div>
                     </>
                     : ''
@@ -74,7 +74,7 @@ export default ({ id }: { id: string; }) => {
                                                         const d = JSON.parse(solos[x[0].id].value);
                                                         request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1] } }, () => setReload(reload + 1));
                                                     }}>Edit</button>
-                                                    <button onClick={() => request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
+                                                    <button onClick={() => confirm('Are you sure?') && request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
                                                 </div>
                                                 : ''
                                         }
