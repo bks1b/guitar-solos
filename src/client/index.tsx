@@ -50,6 +50,21 @@ const App = () => {
         } catch {
             setWait(false);
         }
+        const observer = new MutationObserver(() => {
+            const container = document.querySelector('.contentContainer') as HTMLElement;
+            if (container) {
+                observer.disconnect();
+                (window.onresize = () => {
+                    const h = window.innerHeight + 'px';
+                    root.style.height = h;
+                    container.style.height = `calc(${h} - ${getComputedStyle(container).getPropertyValue('--content-height-off')})`;
+                })();
+            }
+        });
+        observer.observe(document.body, {
+            childList: true, 
+            subtree: true,
+        });
     }, []);
     return wait
         ? <></>
@@ -147,4 +162,6 @@ const App = () => {
         </MainContext.Provider>;
 };
 
-createRoot(document.getElementById('root')!).render(<App/>);
+const root = document.getElementById('root')!;
+
+createRoot(root).render(<App/>);

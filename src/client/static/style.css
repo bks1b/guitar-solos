@@ -9,6 +9,7 @@
     --bar-h: 3px;
     --bar-pad: 6px;
     --bar-size: calc(var(--bar-h) * 3 + 2 * var(--bar-pad));
+    --content-height-off: var(--bar-size) - 2 * var(--navbar-padding);
 }
 
 body {
@@ -110,7 +111,7 @@ button:hover {
 
 .contentContainer {
     flex: 1;
-    height: calc(100vh - var(--bar-size) - 2 * var(--navbar-padding));
+    height: calc(100vh - var(--content-height-off));
     overflow: hidden;
 }
 
