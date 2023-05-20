@@ -1,5 +1,6 @@
 :root {
-    --mobile-scale: 0.5;
+    --mobile-scale: 0.8;
+    --mobile-img-scale: 0.8;
     --big-cover: 300px;
     --medium-cover: 175px;
     --small-cover: 150px;
@@ -44,19 +45,31 @@ body {
     .smallAlbums .link {
         max-width: 225px;
     }
+
+    .albumInfo:not(.chart) {
+        justify-content: center;
+    }
 }
 
 @media only screen and (max-width: 600px) {
     .albumInfo:not(.chart) img {
-        width: calc(var(--big-cover) * var(--mobile-scale));
+        width: calc(var(--big-cover) * var(--mobile-img-scale));
     }
 
     .chart img {
-        width: calc(var(--medium-cover) * var(--mobile-scale));
+        width: calc(var(--medium-cover) * var(--mobile-img-scale));
     }
     
     .smallAlbums img {
-        width: calc(var(--small-cover) * var(--mobile-scale));
+        width: calc(var(--small-cover) * var(--mobile-img-scale));
+    }
+
+    .smallAlbums, .albumInfo {
+        zoom: var(--mobile-scale);
+    }
+
+    * {
+        white-space: nowrap;
     }
 }
 
@@ -179,10 +192,6 @@ button:hover {
 
 .chart {
     margin-top: var(--content-padding);
-}
-
-.albumInfo:not(.chart) {
-    justify-content: center;
 }
 
 .label {
