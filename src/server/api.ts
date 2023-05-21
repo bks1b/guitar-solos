@@ -60,12 +60,14 @@ export default Router()
     .post('/add/song', handler(req => {
         if (typeof req.body?.album !== 'string') throw 'Song "album" expected.';
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Song "name" expected.';
-        if (typeof req.body?.youtube !== 'string' || !req.body.youtube.trim()) throw 'Song "youtube" (video ID) expected.';
         if (!Array.isArray(req.body?.genres) || !(req.body.genres as string[]).filter(x => x.trim()).length) throw 'Song "genres" expected.';
+        if (typeof req.body?.youtube !== 'string') throw 'Song "youtube" (video ID) expected.';
+        const youtube = req.body.youtube.match(/(.*youtu\.be\/|.*[?&]v=)?([^?& ]+)/)?.[2];
+        if (!youtube) throw 'Invalid YouTube URL or ID.';
         return db.addSong({
             album: req.body.album,
             name: req.body.name.trim(),
-            youtube: req.body.youtube.trim(),
+            youtube,
             genres: (req.body.genres as string[]).map(x => x.trim().toLowerCase()),
         });
     }, true))
