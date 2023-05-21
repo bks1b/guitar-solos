@@ -63,7 +63,7 @@ export default ({ id }: { id: string; }) => {
                         <br/>
                         <label>Genres: <input ref={genres} placeholder='Separated by ,'/></label>
                         <br/>
-                        <label>YouTube ID: <input ref={yt}/></label>
+                        <label>YouTube URL or ID: <input ref={yt}/></label>
                         <br/>
                         <button onClick={() => request<{ id: string; }>('/add/song', {
                             name: name.current!.value,
