@@ -102,7 +102,15 @@ export default Router()
     }))
     .post('/charts', handler(() => db.getCharts()))
     .post('/stats', handler(() => db.getStats()))
-    .post('/genius', handler(req => fetch('https://genius.com/api/search/album?page=1&q=' + req.body.query).then(d => d.json()).then(d => d.response.sections[0].hits.map((x: any) => [x.result.name, x.result.artist.name, x.result.release_date_components?.year, x.result.cover_art_url?.replace(/\.\d+x\d+/, '.300x300')]))))
+    .post('/genius', handler(req => fetch('https://genius.com/api/search/album?page=1&q=' + req.body.query)
+        .then(d => d.json())
+        .then(d => d.response.sections[0].hits.map((x: any) => [
+            x.result.name,
+            x.result.artist.name,
+            x.result.release_date_components?.year,
+            (x.result.cover_art_url as string)?.replace(/\.(\d+)x(\d+)/, (s, a, b) => a === b ? '.300x300' : s),
+        ])),
+    ))
     .post('/admin/backup', handler((_, u) => {
         if (u.admin) return db.getBackup();
     }, true))
