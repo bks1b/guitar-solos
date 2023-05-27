@@ -6,7 +6,7 @@ export default () => {
     const { request } = useContext(MainContext)!;
     const [data, setData] = useState<Solos>();
     useEffect(() => {
-        request<Solos>('/discover', {}, x => setData(x));
+        request<Solos>('/discover', null, x => setData(x));
     }, []);
     useEffect(() => {
         document.title = 'Discover | Guitar Solos';
