@@ -10,6 +10,7 @@ import Search from './views/Search';
 import Song from './views/Song';
 import Stats from './views/Stats';
 import Rules from './views/Rules';
+import Admin from './views/Admin';
 
 const App = () => {
     const request: RequestFn = (str, body, cb, err) => fetch('/api' + str, {
@@ -117,6 +118,7 @@ const App = () => {
                                     ['Add album', ['add', 'album']],
                                 ] : [],
                                 ['Rules', ['rules']],
+                                ...user.admin ? [['Admin', ['admin']]] : [],
                             ] as [string, string[]][]).map((x, i) => <div key={i} onClick={() => navigate(x[1])} className={path === x[1] ? 'selected' : ''}>{x[0]}</div>)}
                             {
                                 user.loggedIn
@@ -155,7 +157,9 @@ const App = () => {
                                     ? <Stats/>
                                     : path[0] === 'rules'
                                         ? <Rules/>
-                                        : undefined
+                                        : path[0] === 'admin' && user.admin
+                                            ? <Admin/>
+                                            : undefined
                             : path.length ? undefined : <Charts/>) || <h1>Page not found.</h1>
                 }</div></div>
             </div>

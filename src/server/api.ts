@@ -46,7 +46,7 @@ export default Router()
         await db.editUser(getHeader(req), { $set: await db.getCredentials(req.body) });
         return [req.body[0].toLowerCase()];
     }))
-    .post('/add/album', handler(req => {
+    .post('/add/album', handler((req, u) => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
         if (typeof req.body?.artist !== 'string' || !req.body.artist.trim()) throw 'Artist expected.';
         if (!checkInt(req.body?.year)) throw 'Year expected to be a positive integer.';
@@ -55,9 +55,9 @@ export default Router()
             artist: req.body.artist.trim(),
             cover: req.body.cover?.trim() || '/cover.png',
             year: req.body.year,
-        });
+        }, u.admin);
     }, true))
-    .post('/add/song', handler(req => {
+    .post('/add/song', handler((req, u) => {
         if (typeof req.body?.album !== 'string') throw 'Album expected.';
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
         if (!Array.isArray(req.body?.genres) || !(req.body.genres as string[]).filter(x => x.trim()).length) throw 'Genres expected.';
@@ -69,13 +69,13 @@ export default Router()
             name: req.body.name.trim(),
             youtube,
             genres: (req.body.genres as string[]).map(x => x.trim().toLowerCase()),
-        });
+        }, u.admin);
     }, true))
-    .post('/add/solo', handler(async req => {
+    .post('/add/solo', handler(async (req, u) => {
         if (typeof req.body?.song !== 'string') throw 'Song expected.';
         if (!checkInt(req.body?.start)) throw 'Start expected to be a positive integer.';
         if (!checkInt(req.body?.end)) throw 'End expected to be a positive integer.';
-        await db.addSolo({ song: req.body.song, start: req.body.start, end: req.body.end });
+        await db.addSolo({ song: req.body.song, start: req.body.start, end: req.body.end }, u.admin);
     }, true))
     .post('/get/album', handler(async req => {
         if (typeof req.body?.id !== 'string') throw 'ID expected.';
@@ -114,8 +114,14 @@ export default Router()
     .post('/admin/backup', handler((_, u) => {
         if (u.admin) return db.getBackup();
     }, true))
+    .post('/admin/unverified', handler((_, u) => {
+        if (u.admin) return db.getUnverified();
+    }, true))
     .post('/admin/edit', handler(async (req, u) => {
         if (u.admin) await db.edit(req.body.entry, req.body.data);
+    }, true))
+    .post('/admin/verify', handler(async (req, u) => {
+        if (u.admin) await db.verify(req.body.entry);
     }, true))
     .post('/admin/delete/album', handler(async (req, u) => {
         if (u.admin) await db.deleteAlbum(req.body.id);
