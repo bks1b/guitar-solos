@@ -27,11 +27,11 @@ export default () => {
             }
             {data[1].length ? <h2>Songs</h2> : ''}
             {
-                data[1].map(x => <div onClick={() => navigate(['song', x[0].id])} className='link'>{x[0].name} <a className='label'>by</a> {x[1].artist}</div>)
+                data[1].map((x, i) => <div key={i} onClick={() => navigate(['song', x[0].id])} className='link'>{x[0].name} <a className='label'>by</a> {x[1].artist}</div>)
             }
             {data[2].length ? <h2>Solos</h2> : ''}
             {
-                data[2].map(x => <div onClick={() => navigate(['song', x[1].id])} className='link'>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)} <a className='label'>on</a> {x[1].name} <a className='label'>by</a> {x[2].artist}</div>)
+                data[2].map((x, i) => <div key={i} onClick={() => navigate(['song', x[1].id])} className='link'>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)} <a className='label'>on</a> {x[1].name} <a className='label'>by</a> {x[2].artist}</div>)
             }
         </>
         : <></>;
