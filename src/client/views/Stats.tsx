@@ -7,7 +7,7 @@ import List from '../components/List';
 const keys = ['solo', 'song', 'album', 'artist'];
 
 export default () => {
-    const { request, navigate, admin } = useContext(MainContext)!;
+    const { request, navigate } = useContext(MainContext)!;
     const [data, setData] = useState<Stats>();
     useEffect(() => {
         document.title = 'Stats | Guitar Solos';
@@ -15,16 +15,6 @@ export default () => {
     }, []);
     return data
         ? <>
-            {
-                admin
-                    ? <button onClick={() => request('/admin/backup', {}, d => {
-                        const a = document.createElement('a');
-                        a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(d));
-                        a.download = 'solos.json';
-                        a.click();
-                    })}>Download backup</button>
-                    : ''
-            }
             <h1>Stats</h1>
             <a>Total:</a>
             <ul>{['user', ...keys].map((x, i) => <li key={i}>{data.total[i]} {x}s</li>)}</ul>

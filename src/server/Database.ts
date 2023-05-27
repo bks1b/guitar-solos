@@ -52,26 +52,29 @@ export default class {
         return (await this.db).collection<User>('users').updateOne({ name: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
     }
 
-    async addAlbum(data: Omit<Album, 'id' | 'lowerName' | 'lowerArtist'>) {
+    async addAlbum(data: Omit<Album, 'id' | 'lowerName' | 'lowerArtist'>, admin?: boolean) {
         const lower = { lowerName: data.name.toLowerCase(), lowerArtist: data.artist.toLowerCase() };
         const coll = (await this.db).collection<Album>('albums');
         if (await coll.findOne(lower)) throw 'This album is already listed.';
         const id = await this.getCount('albums');
+        if (!admin) data.unverified = true;
         await coll.insertOne({ ...data, id, ...lower });
         return { id };
     }
     
-    async addSong(data: Omit<Song, 'id' | 'lowerName'>) {
+    async addSong(data: Omit<Song, 'id' | 'lowerName'>, admin?: boolean) {
         const coll = (await this.db).collection<Song>('songs');
         if (await coll.findOne({ lowerName: data.name.toLowerCase(), album: data.album })) throw 'This song is already listed on the album.';
         if (!await (await this.db).collection<Album>('albums').findOne({ id: data.album })) throw 'Album not found.';
         const id = await this.getCount('songs');
+        if (!admin) data.unverified = true;
         await coll.insertOne({ ...data, id, lowerName: data.name.toLowerCase() });
         return { id };
     }
 
-    async addSolo(data: Omit<Solo, 'id'>) {
+    async addSolo(data: Omit<Solo, 'id'>, admin?: boolean) {
         if (!await (await this.db).collection<Song>('songs').findOne({ id: data.song })) throw 'Song not found.';
+        if (!admin) data.unverified = true;
         return (await this.db).collection<Solo>('solos').insertOne({ ...data, id: await this.getCount('solos') });
     }
 
@@ -186,6 +189,22 @@ export default class {
 
     async edit(entry: string[], data: any) {
         (await this.db).collection(entry[0]).updateOne({ id: entry[1] }, { $set: data });
+    }
+
+    async verify(entry: string[]) {
+        (await this.db).collection(entry[0]).updateOne({ id: entry[1] }, { $unset: { unverified: '' } });
+    }
+
+    async getUnverified() {
+        const [albums, songs, solos] = await this.getCollections(true);
+        return [
+            albums.filter(x => x.unverified),
+            songs.filter(x => x.unverified).map(x => [x, albums.find(a => a.id === x.album)]),
+            solos.filter(x => x.unverified).map(x => {
+                const song = songs.find(s => s.id === x.song)!;
+                return [x, song, albums.find(a => a.id === song.album)];
+            }),
+        ];
     }
 
     async deleteAlbum(id: string) {

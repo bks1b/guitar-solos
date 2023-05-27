@@ -18,6 +18,7 @@ export type Album = {
     lowerArtist: string;
     year: number;
     cover: string;
+    unverified?: boolean;
 };
 
 export type Song = {
@@ -27,6 +28,7 @@ export type Song = {
     lowerName: string;
     genres: string[];
     youtube: string;
+    unverified?: boolean;
 };
 
 export type Solo = {
@@ -34,6 +36,7 @@ export type Solo = {
     song: string;
     start: number;
     end: number;
+    unverified?: boolean;
 };
 
 export type Data = Record<'albums' | 'songs' | 'solos', number>;

@@ -42,6 +42,11 @@ export default ({ id }: { id: string; }) => {
                                 request('/admin/edit', { entry: ['albums', album[0].id], data: { ...d, lowerName: d.name.toLowerCase(), lowerArtist: d.artist.toLowerCase() } }, () => setReload(reload + 1));
                             }}>Edit</button>
                             <button onClick={() => confirm('Are you sure?') && request('/admin/delete/album', { id: album[0].id }, () => setReload(reload + 1))}>Delete</button>
+                            {
+                                album[0].unverified
+                                    ? <button onClick={() => request('/admin/verify', { entry: ['albums', album[0].id] }, () => setReload(reload + 1))}>Verify</button>
+                                    : ''
+                            }
                         </div>
                     </>
                     : ''
