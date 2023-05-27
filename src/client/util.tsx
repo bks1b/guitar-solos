@@ -21,4 +21,4 @@ type Ctx = {
     navigate: (x: string[], q?: string[][]) => void;
 };
 export type RequestFn = <T>(str: string, body: any, cb: (x: T) => any, err?: (x: string) => any) => Promise<any>;
-export type Solos = [Solo, Song, Album, number][];
+export type Solos = [Solo, Song, Album, number, number][];
