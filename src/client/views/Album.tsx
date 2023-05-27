@@ -11,7 +11,7 @@ export default ({ id }: { id: string; }) => {
     const yt = useRef<HTMLInputElement>(null);
     const edit = useRef<HTMLTextAreaElement>(null);
     useEffect(() => {
-        request<[Album, Song[]]>('/get/album', { id }, x => setAlbum(x));
+        request<[Album, Song[]]>('/get/album?id=' + id, null, x => setAlbum(x));
     }, [reload]);
     useEffect(() => {
         if (album) document.title = `${album[0].name} - ${album[0].artist} | Guitar Solos`;

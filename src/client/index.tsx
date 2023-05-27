@@ -14,12 +14,12 @@ import Admin from './views/Admin';
 
 const App = () => {
     const request: RequestFn = (str, body, cb, err) => fetch('/api' + str, {
-        method: 'POST',
+        method: body ? 'POST' : 'GET',
         headers: {
             'content-type': 'application/json',
             ...user.loggedIn ? { authorization: JSON.stringify(user.auth) } : {},
         },
-        body: JSON.stringify(body),
+        body: body && JSON.stringify(body),
     }).then(d => d.json()).then(d => {
         if (!d.error) return cb(d);
         else if (err) return err(d.error);

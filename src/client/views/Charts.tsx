@@ -11,7 +11,7 @@ export default () => {
     const [state, dispatch] = getReducer(['score', 'popularity', 'length', 'year']);
     useEffect(() => {
         document.title = 'Charts | Guitar Solos';
-        request<Solos>('/charts', {}, d => setData(d));
+        request<Solos>('/charts', null, d => setData(d));
     }, []);
     if (!data) return <></>;
     const results = state.filters.apply(data).sort((a, b) => getScore(b) - getScore(a));

@@ -11,7 +11,7 @@ export default () => {
     const [data, setData] = useState<Stats>();
     useEffect(() => {
         document.title = 'Stats | Guitar Solos';
-        request<Stats>('/stats', {}, x => setData(x));
+        request<Stats>('/stats', null, x => setData(x));
     }, []);
     return data
         ? <>

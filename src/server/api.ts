@@ -77,13 +77,13 @@ export default Router()
         if (!checkInt(req.body?.end)) throw 'End expected to be a nonnegative integer.';
         await db.addSolo({ song: req.body.song, start: req.body.start, end: req.body.end }, u.admin);
     }, true))
-    .post('/get/album', handler(async req => {
-        if (typeof req.body?.id !== 'string') throw 'ID expected.';
-        return db.getAlbum(req.body.id);
+    .get('/get/album', handler(async req => {
+        if (typeof req.query.id !== 'string') throw 'ID expected.';
+        return db.getAlbum(req.query.id);
     }))
-    .post('/get/song', handler(async req => {
-        if (typeof req.body?.id !== 'string') throw 'ID expected.';
-        return db.getSong(req.body.id, req.headers.authorization ? await getUser(getHeader(req)) : undefined);
+    .get('/get/song', handler(async req => {
+        if (typeof req.query.id !== 'string') throw 'ID expected.';
+        return db.getSong(req.query.id, req.headers.authorization ? await getUser(getHeader(req)) : undefined);
     }))
     .post('/rate', handler(async (req, u) => {
         if (typeof req.body?.id !== 'string') throw 'ID expected.';
@@ -91,7 +91,7 @@ export default Router()
         if (!await (await db.db).collection<Solo>('solos').findOne({ id: req.body.id })) throw 'Solo not found.';
         await db.editUser(getHeader(req), { $set: { ratings: [...u.ratings.filter(x => x.id !== req.body.id), { id: req.body.id, rating: req.body.rating }] } });
     }, true))
-    .post('/discover', handler((_, u) => db.discover(u), true))
+    .get('/discover', handler((_, u) => db.discover(u), true))
     .post('/profile', handler(async req => {
         if (typeof req.body?.name !== 'string') throw 'Name expected.';
         return db.getProfile(req.body.name);
@@ -100,8 +100,8 @@ export default Router()
         if (!req.body?.str || typeof req.body?.str !== 'string') throw 'Query expected.';
         return db.search(req.body.str);
     }))
-    .post('/charts', handler(() => db.getCharts()))
-    .post('/stats', handler(() => db.getStats()))
+    .get('/charts', handler(() => db.getCharts()))
+    .get('/stats', handler(() => db.getStats()))
     .post('/genius', handler(req => fetch('https://genius.com/api/search/album?page=1&q=' + req.body.query)
         .then(d => d.json())
         .then(d => d.response.sections[0].hits.map((x: any) => [

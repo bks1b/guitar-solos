@@ -18,7 +18,7 @@ export default ({ id }: { id: string; }) => {
     const ratings: Record<string, HTMLInputElement> = {};
     const solos: Record<string, HTMLInputElement> = {};
     useEffect(() => {
-        request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song', { id }, x => setSong(x));
+        request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x));
     }, [reload]);
     useEffect(() => {
         if (song) document.title = `${song[0].name} - ${song[1].artist} | Guitar Solos`;
