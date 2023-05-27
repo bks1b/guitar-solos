@@ -9,3 +9,5 @@ export const getScore = (arr: number[]) => {
 };
 
 export const getRatings = (arr: number[]) => Array.from({ length: 11 }, (_, i) => [i, arr.filter(x => x === i).length]).filter(x => x[1]);
+
+export const escapeQuotes = (s: string) => s.replace(/"/g, '&quot;');

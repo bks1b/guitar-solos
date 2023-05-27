@@ -4,7 +4,7 @@ import { Solo, User } from '../types';
 import Database from './Database';
 import { hash } from './util';
 
-const db = new Database();
+export const db = new Database();
 
 const checkInt = (n: number) => typeof n === 'number' && Number.isInteger(n) && n >= 0;
 const checkAuth = (arr: string[]) => {
