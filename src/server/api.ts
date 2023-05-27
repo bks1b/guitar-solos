@@ -49,7 +49,7 @@ export default Router()
     .post('/add/album', handler((req, u) => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
         if (typeof req.body?.artist !== 'string' || !req.body.artist.trim()) throw 'Artist expected.';
-        if (!checkInt(req.body?.year)) throw 'Year expected to be a positive integer.';
+        if (!checkInt(req.body?.year)) throw 'Year expected to be a nonnegative integer.';
         return db.addAlbum({
             name: req.body.name.trim(),
             artist: req.body.artist.trim(),
@@ -73,8 +73,8 @@ export default Router()
     }, true))
     .post('/add/solo', handler(async (req, u) => {
         if (typeof req.body?.song !== 'string') throw 'Song expected.';
-        if (!checkInt(req.body?.start)) throw 'Start expected to be a positive integer.';
-        if (!checkInt(req.body?.end)) throw 'End expected to be a positive integer.';
+        if (!checkInt(req.body?.start)) throw 'Start expected to be a nonnegative integer.';
+        if (!checkInt(req.body?.end)) throw 'End expected to be a nonnegative integer.';
         await db.addSolo({ song: req.body.song, start: req.body.start, end: req.body.end }, u.admin);
     }, true))
     .post('/get/album', handler(async req => {
