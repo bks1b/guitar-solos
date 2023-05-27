@@ -7,7 +7,7 @@ export default () => {
     const search = useRef<HTMLInputElement>(null);
     const [results, setResults] = useState<string[][]>([]);
     useEffect(() => {
-        document.title = 'Add album | Guitar Solos';
+        document.title = 'Add Album | Guitar Solos';
     }, []);
     return <>
         <label>Title: <input ref={refs[0][1]}/></label>
