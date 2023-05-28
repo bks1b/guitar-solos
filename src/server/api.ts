@@ -44,7 +44,7 @@ export default Router()
     .post('/auth/edit', handler(async req => {
         checkAuth(req.body);
         await db.editUser(getHeader(req), { $set: await db.getCredentials(req.body) });
-        return [req.body[0].toLowerCase()];
+        return [req.body[0]];
     }))
     .post('/add/album', handler((req, u) => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';

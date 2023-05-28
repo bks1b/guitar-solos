@@ -3,7 +3,7 @@ const INITIAL_CACHE = [
     '/',
     '/style.css',
     '/app.js',
-    '/manifest.json'
+    '/manifest.json',
 ];
 
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(INITIAL_CACHE))));

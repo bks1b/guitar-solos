@@ -42,7 +42,7 @@ express()
                 type = 'music:song';
             }
         } else if (path[0] === 'profile') {
-            const profile = await (await db.db).collection<User>('users').findOne({ name: path[1].toLowerCase() });
+            const profile = await (await db.db).collection<User>('users').findOne({ lowerName: path[1].toLowerCase() });
             if (profile) {
                 title = profile.name;
                 desc = `View ${title}'s ratings and stats.`;
