@@ -5,6 +5,7 @@ export type Rating = {
 
 export type User = {
     name: string;
+    lowerName: string;
     password: string;
     ratings: Rating[];
     admin?: boolean;

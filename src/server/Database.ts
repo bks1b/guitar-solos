@@ -33,7 +33,7 @@ export default class {
         if (auth.some(x => x.trim().length < 3)) throw 'Usernames and passwords must be at least 3 characters long.';
         if (!/^[a-z0-9_]+$/i.test(auth[0])) throw 'Usernames must only contain English letters, digits and underscores (_).';
         if (await this.getUser(auth[0])) throw 'Username taken.';
-        return { name: auth[0].toLowerCase(), password: hash(auth[1]) };
+        return { name: auth[0], lowerName: auth[0].toLowerCase(), password: hash(auth[1]) };
     }
 
     async getBackup() {
@@ -41,7 +41,7 @@ export default class {
     }
 
     async getUser(name: string) {
-        return (await this.db).collection<User>('users').findOne({ name: name.toLowerCase() });
+        return (await this.db).collection<User>('users').findOne({ lowerName: name.toLowerCase() });
     }
 
     async addUser(auth: string[]) {
@@ -49,7 +49,7 @@ export default class {
     }
 
     async editUser(auth: string[], filter: UpdateFilter<User>) {
-        return (await this.db).collection<User>('users').updateOne({ name: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
+        return (await this.db).collection<User>('users').updateOne({ lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
     }
 
     async addAlbum(data: Omit<Album, 'id' | 'lowerName' | 'lowerArtist'>, admin?: boolean) {
