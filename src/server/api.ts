@@ -1,26 +1,27 @@
 import { Router, Request, RequestHandler } from 'express';
 import fetch from 'node-fetch';
-import { Solo, User } from '../types';
+import { Auth, Solo, User } from '../types';
 import Database from './Database';
 import { hash } from './util';
 
 export const db = new Database();
 
 const checkInt = (n: number) => typeof n === 'number' && Number.isInteger(n) && n >= 0;
-const checkAuth = (arr: string[]) => {
-    if (!Array.isArray(arr) || arr.length !== 2 || arr.some(x => typeof x !== 'string')) throw 'Invalid authorization.';
+const checkAuth = (arr: Auth) => {
+    if (!Array.isArray(arr) || ![2, 3].includes(arr.length) || arr.slice(0, 2).some(x => typeof x !== 'string')) throw 'Invalid authorization.';
 };
 const getHeader = (req: Request) => {
-    const arr = JSON.parse(req.headers.authorization!);
+    const arr: Auth = JSON.parse(req.headers.authorization!);
     checkAuth(arr);
     return arr;
 };
-const getUser = async (auth: string[]) => {
+const getUser = async (auth: Auth) => {
     const user = await db.getUser(auth[0]);
     if (!user) throw 'User not found.';
     if (user?.password !== hash(auth[1])) throw 'Incorrect credentials.';
     return user;
 };
+const filterUser = async (p: Promise<User>) => ({ ...await p, password: undefined, ratings: undefined });
 
 const handler = (fn: (req: Request, u: User) => any, u?: boolean): RequestHandler => async (req, res) => {
     try {
@@ -33,18 +34,16 @@ const handler = (fn: (req: Request, u: User) => any, u?: boolean): RequestHandle
 export default Router()
     .post('/auth/login', handler(async req => {
         checkAuth(req.body);
-        const u = await getUser(req.body);
-        return [u.name, u.admin];
+        return filterUser(getUser(req.body));
     }))
-    .post('/auth/signup', handler(async req => {
+    .post('/auth/signup', handler(req => {
         checkAuth(req.body);
-        await db.addUser(req.body);
-        return [req.body[0]];
+        return filterUser(db.addUser(req.body));
     }))
     .post('/auth/edit', handler(async req => {
+        const header = getHeader(req);
         checkAuth(req.body);
-        await db.editUser(getHeader(req), { $set: await db.getCredentials(req.body) });
-        return [req.body[0]];
+        return filterUser(db.editUser(header, { $set: await db.getCredentials(req.body, req.body[0] !== header[0]) }));
     }))
     .post('/add/album', handler((req, u) => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';

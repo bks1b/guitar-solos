@@ -1,6 +1,6 @@
 import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
 import { compareTwoStrings } from 'string-similarity';
-import { Album, Data, Rating, Solo, Song, User } from '../types';
+import { Album, Auth, Data, Rating, Solo, Song, User } from '../types';
 import { getScore, hash } from './util';
 
 export default class {
@@ -26,14 +26,14 @@ export default class {
     }
 
     private getCollections(solos = false, users = false) {
-        return <Promise<Collections>>Promise.all(['albums', 'songs', ...solos ? ['solos'] : [], ...users ? ['users'] : []].map(async x => (await this.db).collection(x).find().toArray()));
+        return <Promise<Collections>>Promise.all(['albums', 'songs', 'solos', 'users'].map(async (x, i) => [true, true, solos, users][i] ? (await this.db).collection(x).find().toArray() : []));
     }
 
-    async getCredentials(auth: string[]) {
-        if (auth.some(x => x.trim().length < 3)) throw 'Usernames and passwords must be at least 3 characters long.';
+    async getCredentials(auth: Auth, checkTaken = true) {
+        if ([auth[0], auth[1]].some(x => x.trim().length < 3)) throw 'Usernames and passwords must be at least 3 characters long.';
         if (!/^[a-z0-9_]+$/i.test(auth[0])) throw 'Usernames must only contain English letters, digits and underscores (_).';
-        if (await this.getUser(auth[0])) throw 'Username taken.';
-        return { name: auth[0], lowerName: auth[0].toLowerCase(), password: hash(auth[1]) };
+        if (checkTaken && await this.getUser(auth[0])) throw 'Username taken.';
+        return { ...auth[2]! || {}, name: auth[0], lowerName: auth[0].toLowerCase(), password: hash(auth[1]) };
     }
 
     async getBackup() {
@@ -44,12 +44,15 @@ export default class {
         return (await this.db).collection<User>('users').findOne({ lowerName: name.toLowerCase() });
     }
 
-    async addUser(auth: string[]) {
-        return (await this.db).collection<User>('users').insertOne({ ...await this.getCredentials(auth), ratings: [] });
+    async addUser(auth: Auth) {
+        const obj = { ...await this.getCredentials(auth), ratings: [] };
+        await (await this.db).collection<User>('users').insertOne(obj);
+        return obj;
     }
 
-    async editUser(auth: string[], filter: UpdateFilter<User>) {
-        return (await this.db).collection<User>('users').updateOne({ lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
+    async editUser(auth: Auth, filter: UpdateFilter<User>) {
+        await (await this.db).collection<User>('users').updateOne({ lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
+        return (await this.getUser(auth[0]))!;
     }
 
     async addAlbum(data: Omit<Album, 'id' | 'lowerName' | 'lowerArtist'>, admin?: boolean) {
@@ -145,14 +148,16 @@ export default class {
 
     async search(str: string) {
         const [albums, songs] = await this.getCollections();
-        const matches = ([albums, songs] as unknown as { lowerName: string; }[][]).map(arr => arr
+        const users = await (await this.db).collection<User>('users').find({ public: true }).toArray();
+        const matches = ([albums, songs, users] as unknown as { lowerName: string; }[][]).map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
             .filter(x => x[1] > 0.25)
             .sort((a, b) => b[1] - a[1])
-            .map(x => x[0])) as [Album[], Song[]];
+            .map(x => x[0])) as [Album[], Song[], User[]];
         return [
             matches[0].map(x => [{}, {}, x]),
             matches[1].map(x => [{}, x, albums.find(y => y.id === x.album)]),
+            matches[2].map(x => x.name),
         ];
     }
 

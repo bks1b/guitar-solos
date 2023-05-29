@@ -8,6 +8,7 @@ export type User = {
     lowerName: string;
     password: string;
     ratings: Rating[];
+    public: boolean;
     admin?: boolean;
 };
 
@@ -41,3 +42,5 @@ export type Solo = {
 };
 
 export type Data = Record<'albums' | 'songs' | 'solos', number>;
+
+export type Auth = [string, string, { public: boolean; }?];
