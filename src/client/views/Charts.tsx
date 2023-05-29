@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import Ratings from '../components/Ratings';
-import { getTimestamp, MainContext, Solos } from '../util';
+import { getTimestamp, MainContext, Solos, updateParams } from '../util';
 import Filters, { getReducer } from '../components/Filters';
 
 const getScore = (x: Solos[number]) => x[4] ? x[3] / x[4] ** 0.8 : 0;
@@ -13,6 +13,9 @@ export default () => {
         document.title = 'Charts | Guitar Solos';
         request<Solos>('/charts', null, d => setData(d));
     }, []);
+    useEffect(() => {
+        updateParams(state.getParams());
+    });
     if (!data) return <></>;
     const results = state.filters.apply(data).sort((a, b) => getScore(b) - getScore(a));
     if (state.sort.sort) results.sort((a, b) => [b[4] - a[4], b[0].end - b[0].start - a[0].end + a[0].start, b[2].year - a[2].year][state.sort.sort - 1]);

@@ -22,3 +22,8 @@ type Ctx = {
 };
 export type RequestFn = <T>(str: string, body: Record<string, any> | null, cb: (x: T) => any, err?: (x: string) => any) => Promise<any>;
 export type Solos = [Solo, Song, Album, number, number][];
+export type RatingStatsType = {
+    ratings: number[][];
+    albums: [Album, number, number, number, number, number][];
+    artists: [string, number, number, number, number, number, number][];
+};
