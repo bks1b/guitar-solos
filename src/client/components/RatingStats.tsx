@@ -1,16 +1,8 @@
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { MainContext, RatingStatsType, toFixed } from '../util';
+import List from './List';
 
 const STEP = 10;
-
-const List = ({ arr }: { arr: JSX.Element[]; }) => {
-    const [count, setCount] = useState(STEP);
-    return <>
-        {arr.slice(0, count)}
-        {arr.length > count ? <button onClick={() => setCount(count + STEP)} className='listBtn'>Show more</button> : ''}
-        {count > STEP ? <button onClick={() => setCount(count - STEP)} className='listBtn'>Show less</button> : ''}
-    </>;
-};
 
 export default ({ data }: { data: RatingStatsType; }) => {
     const { navigate } = useContext(MainContext)!;
@@ -43,7 +35,7 @@ export default ({ data }: { data: RatingStatsType; }) => {
                 <br/>
                 <a>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</a>
             </div>
-        </div>)}/>
+        </div>)} step={STEP}/>
         <h1>Highest rated artists</h1>
         <List arr={data.artists.map((x, i) => <div key={i}>
             <h3>{i + 1}. <a className='link' onClick={() => navigate([], [['artists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
@@ -51,6 +43,6 @@ export default ({ data }: { data: RatingStatsType; }) => {
                 <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
                 <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
             </ul>
-        </div>)}/>
+        </div>)} step={STEP}/>
     </div>;
 };
