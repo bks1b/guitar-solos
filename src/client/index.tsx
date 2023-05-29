@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Auth, User } from '../types';
 import { isMobile, MainContext, RequestFn } from './util';
 import AddAlbum from './views/AddAlbum';
 import Album from './views/Album';
@@ -32,8 +33,9 @@ const App = () => {
     };
     const [user, setUser] = useState<{
         loggedIn: boolean;
-        auth?: string[];
+        auth?: Auth;
         name?: string;
+        public?: boolean;
         admin?: boolean;
     }>({ loggedIn: false });
     const [path, setPath] = useState(getPath());
@@ -42,12 +44,13 @@ const App = () => {
     const [wait, setWait] = useState(!!localStorage.getItem('auth'));
     const username = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
+    const isPublic = useRef<HTMLInputElement>(null);
     const search = useRef<HTMLInputElement>(null);
     useEffect(() => {
         window.onpopstate = () => setPath(getPath());
         try {
             const auth = JSON.parse(localStorage.getItem('auth')!);
-            if (auth) request<[string, boolean]>('/auth/login', auth, ([name, admin]) => setUser({ loggedIn: true, auth, name, admin }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
+            if (auth) request<[string, boolean]>('/auth/login', auth, d => setUser({ loggedIn: true, auth, ...d }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
         } catch {
             setWait(false);
         }
@@ -76,15 +79,23 @@ const App = () => {
                         if ((e.target as HTMLElement).className === 'popupContainer') setPopup(false);
                     }}>
                         <div className='popup'>
-                            <label>Username: <input ref={username}/></label>
+                            <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''}/></label>
                             <br/>
                             <label>Password: <input type='password' ref={password}/></label>
                             <br/>
+                            {
+                                popup === 'login'
+                                    ? ''
+                                    : <>
+                                        <label><input type='checkbox' ref={isPublic} defaultChecked={user.loggedIn ? user.public : true}/> Profile can show up in search results</label>
+                                        <br/>
+                                    </>
+                            }
                             <button onClick={async () => {
-                                const auth = [username.current!.value, password.current!.value];
-                                request<[string, boolean]>('/auth/' + popup, auth, ([name, admin]) => {
+                                const auth = [username.current!.value, password.current!.value, { public: isPublic.current?.checked }] as Auth;
+                                request<User>('/auth/' + popup, auth, d => {
                                     localStorage.setItem('auth', JSON.stringify(auth));
-                                    setUser({ loggedIn: true, auth, name, admin: popup === 'login' ? admin : user.admin });
+                                    setUser({ loggedIn: true, auth, ...d });
                                     setPopup(false);
                                 });
                             }}>{popup === 'edit' ? 'Save' : popup === 'login' ? 'Log in' : 'Sign up'}</button>
