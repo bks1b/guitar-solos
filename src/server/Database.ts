@@ -25,8 +25,12 @@ export default class {
             .map(x => this.getSolo(x[0], data));
     }
 
-    private getCollections(solos = false, users = false) {
+    getCollections(solos = false, users = false) {
         return <Promise<Collections>>Promise.all(['albums', 'songs', 'solos', 'users'].map(async (x, i) => [true, true, solos, users][i] ? (await this.db).collection(x).find().toArray() : []));
+    }
+
+    async getPublicUsers() {
+        return (await this.db).collection<User>('users').find({ public: true }).toArray();
     }
 
     async getCredentials(auth: Auth, checkTaken = true) {
@@ -148,7 +152,7 @@ export default class {
 
     async search(str: string) {
         const [albums, songs] = await this.getCollections();
-        const users = await (await this.db).collection<User>('users').find({ public: true }).toArray();
+        const users = await this.getPublicUsers();
         const matches = ([albums, songs, users] as unknown as { lowerName: string; }[][]).map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
             .filter(x => x[1] > 0.25)

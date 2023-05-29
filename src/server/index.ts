@@ -10,6 +10,7 @@ import api, { db } from './api';
 import { escapeQuotes } from './util';
 
 const PORT = process.env.PORT || 2000;
+const BASE_URL = process.env.BASE_URL!;
 
 const html = readFileSync(join(process.cwd(), 'src/client/index.html'), 'utf8');
 
@@ -18,6 +19,12 @@ express()
     .use('/api', api)
     .use(express.static(join(process.cwd(), 'build')))
     .use(express.static(join(process.cwd(), 'src/client/static')))
+    .get('/sitemap.txt', async (_, res) => {
+        const [albums, songs] = await db.getCollections();
+        const users = await db.getPublicUsers();
+        res.setHeader('content-type', 'text/plain; charset=UTF-8');
+        res.send(['', 'add/album', 'rules', 'stats', 'discover', ...albums.map(x => 'album/' + x.id), ...songs.map(x => 'song/' + x.id), ...users.map(x => 'profile/' + x.lowerName)].map(x => BASE_URL + x).join('\n'));
+    })
     .get('*', async (req, res) => {
         let title = 'Page Not Found';
         let desc = '';
@@ -70,7 +77,7 @@ express()
             <meta name="description" content="${desc}">
             <meta property="og:title" content="${escapeQuotes(title)} | Guitar Solos">
             <meta property="og:description" content="${desc}">
-            <meta property="og:url" content="https://guitar-solos.onrender.com${req.url}">
+            <meta property="og:url" content="${BASE_URL}${req.url}">
             <meta property="og:type" content="${type}">
             ${image ? `<meta property="og:image" content="${image}">` : ''}
         `.split('\n').filter(x => x.trim()).map(x => x.slice(4)).join('\n')));
