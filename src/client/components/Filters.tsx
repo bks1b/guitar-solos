@@ -1,5 +1,5 @@
-import { Dispatch, Fragment, useEffect, useReducer } from 'react';
-import { Solos, updateParams } from '../util';
+import { Dispatch, Fragment, useReducer } from 'react';
+import { Solos } from '../util';
 
 const orderBy = ['ascending', 'descending'];
 
@@ -34,23 +34,18 @@ export const getReducer = (arr: string[]) => {
     });
 };
 
-export default ({ state, dispatch }: { state: State; dispatch: Dispatch<Action>; }) => {
-    useEffect(() => {
-        updateParams(state.getParams());
-    });
-    return <div>
-        <a>Sort by: </a>
-        {([['sort', state.sort.arr], ['order', orderBy]] as ['sort' | 'order', string[]][]).map((x, i) => <Fragment key={i}>
-            {i ? <a> </a> : ''}
-            <select defaultValue={state.sort[x[0]]} onChange={e => dispatch(['sort', x[0], e.target.selectedIndex])}>{x[1].map((x, i) => <option key={i} value={i}>{x}</option>)}</select>
-        </Fragment>)}
-        <br/>
-        {state.filters.arr.map((x, i) => <Fragment key={i}>
-            {i ? <br/> : ''}
-            <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[2].join('; ')} key={state.filters.forced} onInput={e => dispatch(['filter', i, (e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x)])}/></label>
-        </Fragment>)}
-    </div>;
-};
+export default ({ state, dispatch }: { state: State; dispatch: Dispatch<Action>; }) => <div>
+    <a>Sort by: </a>
+    {([['sort', state.sort.arr], ['order', orderBy]] as ['sort' | 'order', string[]][]).map((x, i) => <Fragment key={i}>
+        {i ? <a> </a> : ''}
+        <select defaultValue={state.sort[x[0]]} onChange={e => dispatch(['sort', x[0], e.target.selectedIndex])}>{x[1].map((x, i) => <option key={i} value={i}>{x}</option>)}</select>
+    </Fragment>)}
+    <br/>
+    {state.filters.arr.map((x, i) => <Fragment key={i}>
+        {i ? <br/> : ''}
+        <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[2].join('; ')} key={state.filters.forced} onInput={e => dispatch(['filter', i, (e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x)])}/></label>
+    </Fragment>)}
+</div>;
 
 type Filter = [string, (x: Solos[number]) => string[], string[]];
 type State = {
