@@ -39,6 +39,22 @@ export default ({ str }: { str: string; }) => {
                     : ''
             }
             {
+                data[3].length
+                    ? <>
+                        <h1>Artists</h1>
+                        <List arr={data[3].map((x, i) => <li key={i} className='link' onClick={() => navigate([], [['artists', x.toLowerCase()]])}>{x}</li>)} step={10} render={a => <ul>{a}</ul>}/>
+                    </>
+                    : ''
+            }
+            {
+                data[4].length
+                    ? <>
+                        <h1>Genres</h1>
+                        <List arr={data[4].map((x, i) => <li key={i} className='link' onClick={() => navigate([], [['genres', x.toLowerCase()]])}>{x}</li>)} step={10} render={a => <ul>{a}</ul>}/>
+                    </>
+                    : ''
+            }
+            {
                 data.some(x => x.length)
                     ? ''
                     : <h1>No songs or albums found.</h1>
@@ -47,4 +63,4 @@ export default ({ str }: { str: string; }) => {
         : <></>;
 };
 
-type Data = [Solos, Solos, string[]];
+type Data = [Solos, Solos, string[], string[], string[]];
