@@ -61,15 +61,17 @@ express()
                     ? ['Search', '']
                     : [title, '']
             : path.length === 1
-                ? path[0] === 'rules'
-                    ? ['Rules', '']
-                    : path[0] === 'stats'
-                        ? ['Stats', 'View statistics, and the highest rated albums and artists.']
-                        : path[0] === 'discover'
-                            ? ['Discover', '']
-                            : !path[0]
-                                ? ['Charts', 'View the highest rated guitar solos.']
-                                : [title, '']
+                ? path[0] === 'help'
+                    ? ['Help', '']
+                    : path[0] === 'rules'
+                        ? ['Rules', '']
+                        : path[0] === 'stats'
+                            ? ['Stats', 'View statistics, and the highest rated albums and artists.']
+                            : path[0] === 'discover'
+                                ? ['Discover', '']
+                                : !path[0]
+                                    ? ['Charts', 'View the highest rated guitar solos.']
+                                    : [title, '']
                 : [title, ''];
         desc = `${escapeQuotes(desc)}${desc ? ' ' : ''}Discover and rate guitar solos.`;
         res.send(html.replace('<!-- meta -->', () => `

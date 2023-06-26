@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { genius } from '../util';
 
 export default () => {
     useEffect(() => {
@@ -29,7 +30,7 @@ export default () => {
             </ul>
             <li>Album covers:</li>
             <ul>
-                <li>Album covers must have an aspect ratio close to 1:1, and must be around 300px*300px. <a href='https://genius.com/' target='_blank'>Genius</a> is the preferred source of album covers.</li>
+                <li>Album covers must have an aspect ratio close to 1:1, and must be around 300px*300px. {genius} is the preferred source of album covers.</li>
                 <li>NSFW album covers or album covers that might be considered weird must not be uploaded. Instead, the album cover URL field must be left empty.</li>
             </ul>
         </ul>

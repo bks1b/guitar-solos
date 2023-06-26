@@ -14,6 +14,8 @@ export const toFixed = (n: number) => +n.toFixed(1);
 export const getSecs = (m: RefObject<HTMLInputElement>, s: RefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
 
+export const genius = <a href='https://genius.com/' target='_blank'>Genius</a>;
+
 type Ctx = {
     loggedIn: boolean;
     admin: boolean;

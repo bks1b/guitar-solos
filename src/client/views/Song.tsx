@@ -4,7 +4,7 @@ import Albums from '../components/Albums';
 import Ratings from '../components/Ratings';
 import { getSecs, getTimestamp, MainContext, Solos } from '../util';
 
-const TimeInput = ({ _ref, sec }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; }) => <input type='number' min={0} max={sec ? 59 : undefined} className='num' ref={_ref}/>;
+const TimeInput = ({ _ref, sec }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref}/>;
 
 export default ({ id }: { id: string; }) => {
     const { request, navigate, loggedIn, admin } = useContext(MainContext)!;
