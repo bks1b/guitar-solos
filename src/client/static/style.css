@@ -273,6 +273,10 @@ textarea, input {
     border: 1px solid black;
 }
 
+.soloInput {
+    width: max(200px, 25%);
+}
+
 .row {
     display: flex;
     align-items: center;

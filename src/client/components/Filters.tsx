@@ -18,7 +18,12 @@ export const getReducer = (arr: string[]) => {
             order: +(params.get('order') !== orderBy[0]),
         },
         filters: {
-            arr: ([['artists', x => [x[2].artist]], ['genres', x => x[1].genres], ['year', x => [x[2].year + '']]] as [string, (x: Solos[number]) => string[]][]).map(x => [...x, params.get(x[0])?.split(';') || []] as Filter),
+            arr: ([
+                ['artists', x => [x[2].artist]],
+                ['guitarists', x => x[0].guitarists],
+                ['genres', x => x[1].genres],
+                ['year', x => [x[2].year + '']],
+            ] as [string, (x: Solos[number]) => string[]][]).map(x => [...x, params.get(x[0])?.toLowerCase().split(';') || []] as Filter),
             forced: 0,
             apply(d: Solos) {
                 return d.filter(x => this.arr.every(y => !y[2].length || y[1](x as any).some(z => y[2].includes(z.toLowerCase()))));

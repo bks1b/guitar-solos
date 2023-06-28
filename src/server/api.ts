@@ -74,7 +74,13 @@ export default Router()
         if (typeof req.body?.song !== 'string') throw 'Song expected.';
         if (!checkInt(req.body?.start)) throw 'Start expected to be a nonnegative integer.';
         if (!checkInt(req.body?.end)) throw 'End expected to be a nonnegative integer.';
-        await db.addSolo({ song: req.body.song, start: req.body.start, end: req.body.end }, u.admin);
+        if (!Array.isArray(req.body?.guitarists)) throw 'Guitarists expected.';
+        await db.addSolo({
+            song: req.body.song,
+            start: req.body.start,
+            end: req.body.end,
+            guitarists: (req.body.guitarists as string[]).map(x => x.trim()),
+        }, u.admin);
     }, true))
     .get('/get/album', handler(async req => {
         if (typeof req.query.id !== 'string') throw 'ID expected.';

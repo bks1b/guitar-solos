@@ -44,5 +44,13 @@ export default ({ data }: { data: RatingStatsType; }) => {
                 <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
             </ul>
         </div>)} step={STEP}/>
+        <h1>Highest rated guitarists</h1>
+        <List arr={data.guitarists.map((x, i) => <div key={i}>
+            <h3>{i + 1}. <a className='link' onClick={() => navigate([], [['guitarists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
+            <ul>
+                <li>{x[5]} solos, {x[1]} artists</li>
+                <li>{toFixed(x[3])}/10 average rating, {x[4]} total ratings</li>
+            </ul>
+        </div>)} step={STEP}/>
     </div>;
 };
