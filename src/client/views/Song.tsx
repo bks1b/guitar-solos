@@ -3,6 +3,7 @@ import { Album, Solo, Song } from '../../types';
 import Albums from '../components/Albums';
 import Ratings from '../components/Ratings';
 import { getSecs, getTimestamp, MainContext, Solos } from '../util';
+import LinkList from '../components/LinkList';
 
 const TimeInput = ({ _ref, sec }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref}/>;
 
@@ -14,6 +15,7 @@ export default ({ id }: { id: string; }) => {
     const startS = useRef<HTMLInputElement>(null);
     const endM = useRef<HTMLInputElement>(null);
     const endS = useRef<HTMLInputElement>(null);
+    const guitarists = useRef<HTMLInputElement>(null);
     const edit = useRef<HTMLTextAreaElement>(null);
     const ratings: Record<string, HTMLInputElement> = {};
     const solos: Record<string, HTMLInputElement> = {};
@@ -33,7 +35,7 @@ export default ({ id }: { id: string; }) => {
                     <h2><a className='label'>on</a> <a className='link' onClick={() => navigate(['album', song[1].id])}>{song[1].name}</a></h2>
                 </div>
             </div>
-            <a>Genres: {song[0].genres.map((x, i) => <a key={i}><a className='link' onClick={() => navigate([], [['genres', x]])}>{x}</a>{i < song[0].genres.length - 1 ? ', ' : ''}</a>)}</a>
+            <a>Genres: <LinkList arr={song[0].genres} query='genres'/></a>
             {
                 admin
                     ? <>
@@ -65,6 +67,14 @@ export default ({ id }: { id: string; }) => {
                         <hr/>
                         {song[2].sort((a, b) => a[0].start - b[0].start).map(x => <div key={x[0].start}>
                             <h1 className='center'>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h1>
+                            {
+                                x[0].guitarists.length
+                                    ? <>
+                                        <a>Guitarist{x[0].guitarists.length === 1 ? '' : 's'}: <LinkList arr={x[0].guitarists} query='guitarists'/></a>
+                                        <br/>
+                                    </>
+                                    : ''
+                            }
                             <Ratings sum={x[2]} count={x[3]}/>
                             {
                                 loggedIn
@@ -74,10 +84,10 @@ export default ({ id }: { id: string; }) => {
                                         {
                                             admin
                                                 ? <div className='row'>
-                                                    <input defaultValue={JSON.stringify([x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)))} ref={e => solos[x[0].id] = e!}/>
+                                                    <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)), x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
                                                     <button onClick={() => {
                                                         const d = JSON.parse(solos[x[0].id].value);
-                                                        request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1] } }, () => setReload(reload + 1));
+                                                        request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1], guitarists: d[2] } }, () => setReload(reload + 1));
                                                     }}>Edit</button>
                                                     <button onClick={() => confirm('Are you sure?') && request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
                                                     {
@@ -114,12 +124,15 @@ export default ({ id }: { id: string; }) => {
                         <br/>
                         <label>End: <TimeInput _ref={endM}/>:<TimeInput sec _ref={endS}/></label>
                         <br/>
+                        <label>Guitarists (leave empty if unknown): <input placeholder='Separated by ;' ref={guitarists}/></label>
+                        <br/>
                         <button onClick={() => request('/add/solo', {
                             song: id,
                             start: getSecs(startM, startS),
                             end: +endM.current!.value * 60 + +endS.current!.value,
+                            guitarists: guitarists.current!.value.split(';'),
                         }, () => {
-                            startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = '';
+                            startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = guitarists.current!.value = '';
                             setReload(reload + 1);
                         })}>Add</button>
                     </>

@@ -38,6 +38,7 @@ export type Solo = {
     song: string;
     start: number;
     end: number;
+    guitarists: string[];
     unverified?: boolean;
 };
 

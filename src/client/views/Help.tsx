@@ -19,7 +19,7 @@ export default () => {
         <h1>Adding solos</h1>
         <ul>
             <li>Go to a song's page, either by using the search feature on the top, or adding a new song.</li>
-            <li>Input the solo's start and end (minutes:seconds).</li>
+            <li>Input the solo's start and end (minutes:seconds) and its guitarist(s), if known.</li>
             <li>Click "Add". You can now rate the solo.</li>
         </ul>
         <h1>Adding albums</h1>

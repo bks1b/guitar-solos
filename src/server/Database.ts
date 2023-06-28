@@ -118,7 +118,7 @@ export default class {
     getSolo(id: string, [albums, songs, solos]: Collections) {
         const solo = solos.find(x => x.id === id)!;
         const song = songs.find(x => x.id === solo.song)!;
-        return [solo, song, albums.find(x => x.id === song.album)];
+        return <const>[solo, song, albums.find(x => x.id === song.album)!];
     }
 
     async getProfile(name: string) {
@@ -182,6 +182,7 @@ export default class {
 
     getRatingStats(ratings: Rating[], [albums, songs, solos]: Collections, rated = false) {
         const artists = [...new Set(albums.map(x => x.artist))];
+        const guitarists = [...new Set(solos.flatMap(x => x.guitarists))];
         const albumScores = albums.map(x => {
             const ids = songs.filter(s => s.album === x.id).map(s => s.id);
             const arr = solos.filter(x => ids.includes(x.song));
@@ -196,11 +197,22 @@ export default class {
             artists: artists
                 .map(x => {
                     const arr = albumScores.filter(a => a[0].artist === x);
-                    const scores = arr.flatMap(a => a[3]);
-                    return <const>[x, arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(scores), arr.length];
+                    return <const>[x, arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(arr.flatMap(a => a[3])), arr.length];
                 })
                 .filter(x => !rated || x[5])
                 .sort((a, b) => b[3] - a[3]),
+            guitarists: guitarists
+                .map(x => {
+                    const arr = solos.filter(s => s.guitarists.includes(x));
+                    return <const>[
+                        x,
+                        new Set(arr.map(s => this.getSolo(s.id, <Collections><unknown>[albums, songs, solos])[2].artist)).size,
+                        ...getScore(arr.flatMap(s => ratings.filter(r => r.id === s.id).map(r => r.rating))),
+                        arr.length,
+                    ];
+                })
+                .filter(x => !rated || x[4])
+                .sort((a, b) => b[2] - a[2]),
         };
     }
 
