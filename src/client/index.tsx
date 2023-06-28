@@ -150,7 +150,7 @@ const App = () => {
                         </div>
                         : ''
                 }
-                <div className='contentContainer'><div className='content' key={JSON.stringify(path)}>{
+                <div className='contentContainer'><div className='content' key={Date.now()}>{
                     (path.length === 2
                         ? path[0] === 'add' && path[1] === 'album' && user.loggedIn
                             ? <AddAlbum/>
