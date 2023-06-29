@@ -79,7 +79,7 @@ export default Router()
             song: req.body.song,
             start: req.body.start,
             end: req.body.end,
-            guitarists: (req.body.guitarists as string[]).map(x => x.trim()),
+            guitarists: (req.body.guitarists as string[]).map(x => x.trim()).filter(x => x),
         }, u.admin);
     }, true))
     .get('/get/album', handler(async req => {
