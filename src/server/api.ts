@@ -119,8 +119,8 @@ export default Router()
     .post('/admin/backup', handler((_, u) => {
         if (u.admin) return db.getBackup();
     }, true))
-    .post('/admin/unverified', handler((_, u) => {
-        if (u.admin) return db.getUnverified();
+    .post('/admin/data', handler((_, u) => {
+        if (u.admin) return db.getAdminData();
     }, true))
     .post('/admin/edit', handler(async (req, u) => {
         if (u.admin) await db.edit(req.body.entry, req.body.data);

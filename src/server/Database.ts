@@ -235,16 +235,19 @@ export default class {
         (await this.db).collection(entry[0]).updateOne({ id: entry[1] }, { $unset: { unverified: '' } });
     }
 
-    async getUnverified() {
+    async getAdminData() {
         const [albums, songs, solos] = await this.getCollections(true);
-        return [
-            albums.filter(x => x.unverified),
-            songs.filter(x => x.unverified).map(x => [x, albums.find(a => a.id === x.album)]),
-            solos.filter(x => x.unverified).map(x => {
-                const song = songs.find(s => s.id === x.song)!;
-                return [x, song, albums.find(a => a.id === song.album)];
+        return {
+            unverified: [
+                albums.filter(x => x.unverified),
+                songs.filter(x => x.unverified).map(x => [x, albums.find(a => a.id === x.album)]),
+                solos.filter(x => x.unverified).map(x => this.getSolo(x.id, <Collections><unknown>[albums, songs, solos])),
+            ],
+            noGuitarists: [...new Set(solos.filter(x => !x.guitarists.length).map(x => x.song))].map(x => {
+                const song = songs.find(s => s.id === x)!;
+                return [song, albums.find(a => a.id === song.album)];
             }),
-        ];
+        };
     }
 
     async deleteAlbum(id: string) {
