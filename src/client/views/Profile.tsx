@@ -33,11 +33,11 @@ export default ({ name }: { name: string; }) => {
             view
                 ? <div>
                     <a>{user[1].length} solos rated</a>
-                    <RatingStats data={user[2]}/>
+                    <RatingStats data={user[2]} path={['profile', user[0]]}/>
                 </div>
                 : <>
                     <div style={{ marginBottom: 'var(--content-padding)' }}><Filters state={state} dispatch={dispatch}/></div>
-                    <Albums arr={arr} ratings ts/>
+                    <Albums arr={arr} navigateArtist={a => dispatch(['filter', 0, [a], true])} ratings ts/>
                 </>
         }
     </>;

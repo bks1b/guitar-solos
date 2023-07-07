@@ -125,7 +125,7 @@ export default class {
         const user = await this.getUser(name);
         if (!user) throw 'User not found.';
         const data = await this.getCollections(true);
-        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating]), this.getRatingStats(user.ratings, data, true)];
+        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating]), this.getRatingStats(user.ratings, data)];
     }
 
     async discover(user: User) {
@@ -180,39 +180,32 @@ export default class {
         });
     }
 
-    getRatingStats(ratings: Rating[], [albums, songs, solos]: Collections, rated = false) {
-        const artists = [...new Set(albums.map(x => x.artist))];
-        const guitarists = [...new Set(solos.flatMap(x => x.guitarists))];
+    getRatingStats(ratings: Rating[], [albums, songs, solos]: Collections) {
+        const ratedSolos = solos.map(x => <const>[x, ratings.filter(r => r.id === x.id).map(r => r.rating)]).filter(x => x[1].length);
         const albumScores = albums.map(x => {
-            const ids = songs.filter(s => s.album === x.id).map(s => s.id);
-            const arr = solos.filter(x => ids.includes(x.song));
-            return <const>[x, ids.length, arr.length, arr.flatMap(s => ratings.filter(r => r.id === s.id).map(r => r.rating))];
-        });
+            const songArr = songs
+                .filter(s => s.album === x.id)
+                .map(x => <const>[x, ratedSolos.filter(s => s[0].song === x.id)])
+                .filter(s => s[1].length);
+            const soloArr = songArr.flatMap(s => s[1]);
+            return <const>[x, songArr.length, soloArr.length, soloArr.flatMap(s => s[1])];
+        }).filter(x => x[2]);
         return {
             ratings: Array.from({ length: 11 }, (_, i) => [i, ratings.filter(x => x.rating === i).length]).filter(x => x[1]),
-            albums: albumScores
-                .map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])])
-                .filter(x => !rated || x[5])
-                .sort((a, b) => b[3] - a[3]),
-            artists: artists
-                .map(x => {
-                    const arr = albumScores.filter(a => a[0].artist === x);
-                    return <const>[x, arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(arr.flatMap(a => a[3])), arr.length];
-                })
-                .filter(x => !rated || x[5])
-                .sort((a, b) => b[3] - a[3]),
-            guitarists: guitarists
-                .map(x => {
-                    const arr = solos.filter(s => s.guitarists.includes(x));
-                    return <const>[
-                        x,
-                        new Set(arr.map(s => this.getSolo(s.id, <Collections><unknown>[albums, songs, solos])[2].artist)).size,
-                        ...getScore(arr.flatMap(s => ratings.filter(r => r.id === s.id).map(r => r.rating))),
-                        arr.length,
-                    ];
-                })
-                .filter(x => !rated || x[4])
-                .sort((a, b) => b[2] - a[2]),
+            albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]).sort((a, b) => b[3] - a[3]),
+            artists: [...new Set(albumScores.map(x => x[0].artist))].map(x => {
+                const arr = albumScores.filter(a => a[0].artist === x);
+                return <const>[x, arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(arr.flatMap(a => a[3])), arr.length];
+            }).sort((a, b) => b[3] - a[3]),
+            guitarists: [...new Set(ratedSolos.flatMap(x => x[0].guitarists))].map(x => {
+                const arr = ratedSolos.filter(s => s[0].guitarists.includes(x));
+                return <const>[
+                    x,
+                    new Set(arr.map(s => this.getSolo(s[0].id, <Collections><unknown>[albums, songs, solos])[2].artist)).size,
+                    ...getScore(arr.flatMap(s => s[1])),
+                    arr.length,
+                ];
+            }).sort((a, b) => b[2] - a[2]),
         };
     }
 

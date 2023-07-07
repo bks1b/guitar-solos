@@ -4,7 +4,7 @@ import List from './List';
 
 const STEP = 10;
 
-export default ({ data }: { data: RatingStatsType; }) => {
+export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }) => {
     const { navigate } = useContext(MainContext)!;
     const total = data.ratings.reduce((a, b) => a + b[1], 0);
     return <div>
@@ -30,7 +30,7 @@ export default ({ data }: { data: RatingStatsType; }) => {
             <img src={x[0].cover} className='link' onClick={() => navigate(['album', x[0].id])}/>
             <div>
                 <h2 className='link' onClick={() => navigate(['album', x[0].id])}>{x[0].name}</h2>
-                <h2 className='link' onClick={() => navigate([], [['artists', x[0].artist.toLowerCase()]])}>{x[0].artist}</h2>
+                <h2 className='link' onClick={() => navigate(path, [['artists', x[0].artist.toLowerCase()]])}>{x[0].artist}</h2>
                 <a>{x[1]} songs, {x[2]} solos</a>
                 <br/>
                 <a>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</a>
@@ -38,7 +38,7 @@ export default ({ data }: { data: RatingStatsType; }) => {
         </div>)} step={STEP}/>
         <h1>Highest rated artists</h1>
         <List arr={data.artists.map((x, i) => <div key={i}>
-            <h3>{i + 1}. <a className='link' onClick={() => navigate([], [['artists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
+            <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['artists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
             <ul>
                 <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
                 <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
@@ -46,7 +46,7 @@ export default ({ data }: { data: RatingStatsType; }) => {
         </div>)} step={STEP}/>
         <h1>Highest rated guitarists</h1>
         <List arr={data.guitarists.map((x, i) => <div key={i}>
-            <h3>{i + 1}. <a className='link' onClick={() => navigate([], [['guitarists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
+            <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['guitarists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
             <ul>
                 <li>{x[5]} solos, {x[1]} artists</li>
                 <li>{toFixed(x[3])}/10 average rating, {x[4]} total ratings</li>
