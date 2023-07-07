@@ -14,6 +14,9 @@ import Rules from './views/Rules';
 import Admin from './views/Admin';
 import Help from './views/Help';
 
+let id = Date.now();
+let lastStateStr = '';
+
 const App = () => {
     const request: RequestFn = (str, body, cb, err) => fetch('/api' + str, {
         method: body ? 'POST' : 'GET',
@@ -71,6 +74,9 @@ const App = () => {
             subtree: true,
         });
     }, []);
+    const stateStr = JSON.stringify([sidebar, popup]);
+    if (stateStr === lastStateStr) id = Date.now();
+    lastStateStr = stateStr;
     return wait
         ? <></>
         : <MainContext.Provider value={{ request, navigate, loggedIn: user.loggedIn, admin: user.admin! }}>
@@ -150,7 +156,7 @@ const App = () => {
                         </div>
                         : ''
                 }
-                <div className='contentContainer'><div className='content' key={Date.now()}>{
+                <div className='contentContainer'><div className='content' key={id}>{
                     (path.length === 2
                         ? path[0] === 'add' && path[1] === 'album' && user.loggedIn
                             ? <AddAlbum/>
