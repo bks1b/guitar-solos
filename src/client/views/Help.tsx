@@ -35,5 +35,11 @@ export default () => {
             <li>Input the required fields: the song's name, its genres, and its official YouTube video's URL. {genius} is a reliable source for finding a song's genres.</li>
             <li>Click "Add". You will get redirected to the song's page, where you can now add solos.</li>
         </ul>
+        <h1>Filters</h1>
+        <ul>
+            <li>The fields at the top of certain pages ("Charts" and profiles) allow you to filter and sort the listed solos.</li>
+            <li>The dropdowns next to certain fields ("Genres" and "Guitarists") allow you to choose whether all or any of the queries must match.</li>
+            <li>By typing a percent sign (%) in front of a query, you can exclude the query from the results. For example, typing "death metal; %melodic death metal" into the "Genres" field and changing the mode to "all" shows all death metal songs that aren't melodic death metal.</li>
+        </ul>
     </>;
 };
