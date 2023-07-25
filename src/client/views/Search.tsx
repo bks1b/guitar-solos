@@ -1,9 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
 import { MainContext, Solos } from '../util';
 import List from '../components/List';
 
 const STEP = 20;
+const LIST_STEP = 10;
 
 export default ({ str }: { str: string; }) => {
     const { request, navigate } = useContext(MainContext)!;
@@ -14,46 +15,22 @@ export default ({ str }: { str: string; }) => {
     }, []);
     return data
         ? <>
-            {
-                data[0].length
+            {['Albums', 'Songs'].map((x, i) => <Fragment key={i}>{
+                data[i].length
                     ? <>
-                        <h1>Albums</h1>
-                        <List arr={data[0]} step={STEP} render={a => <Albums arr={a} album/>}/>
+                        <h1>{x}</h1>
+                        <List arr={data[i] as Solos} step={STEP} render={a => <Albums arr={a} album={!i}/>}/>
                     </>
                     : ''
-            }
-            {
-                data[1].length
+            }</Fragment>)}
+            {['Users', 'Artists', 'Guitarists', 'Genres'].map((x, i) => <Fragment key={i}>{
+                data[i + 2].length
                     ? <>
-                        <h1>Songs</h1>
-                        <List arr={data[1]} step={STEP} render={a => <Albums arr={a}/>}/>
+                        <h1>{x}</h1>
+                        <List arr={(data[i + 2] as string[]).map((y, j) => <li key={j} className='link' onClick={() => navigate(...(i ? [[], [[x.toLowerCase(), y.toLowerCase()]]] : [['profile', y]]) as [string[], string[][]])}>{y}</li>)} step={LIST_STEP} render={a => <ul>{a}</ul>}/>
                     </>
                     : ''
-            }
-            {
-                data[2].length
-                    ? <>
-                        <h1>Users</h1>
-                        <List arr={data[2].map((x, i) => <li key={i} className='link' onClick={() => navigate(['profile', x])}>{x}</li>)} step={10} render={a => <ul>{a}</ul>}/>
-                    </>
-                    : ''
-            }
-            {
-                data[3].length
-                    ? <>
-                        <h1>Artists</h1>
-                        <List arr={data[3].map((x, i) => <li key={i} className='link' onClick={() => navigate([], [['artists', x.toLowerCase()]])}>{x}</li>)} step={10} render={a => <ul>{a}</ul>}/>
-                    </>
-                    : ''
-            }
-            {
-                data[4].length
-                    ? <>
-                        <h1>Genres</h1>
-                        <List arr={data[4].map((x, i) => <li key={i} className='link' onClick={() => navigate([], [['genres', x.toLowerCase()]])}>{x}</li>)} step={10} render={a => <ul>{a}</ul>}/>
-                    </>
-                    : ''
-            }
+            }</Fragment>)}
             {
                 data.some(x => x.length)
                     ? ''
@@ -63,4 +40,4 @@ export default ({ str }: { str: string; }) => {
         : <></>;
 };
 
-type Data = [Solos, Solos, string[], string[], string[]];
+type Data = [Solos, Solos, string[], string[], string[], string[]];
