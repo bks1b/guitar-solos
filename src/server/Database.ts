@@ -151,7 +151,7 @@ export default class {
     }
 
     async search(str: string) {
-        const [albums, songs] = await this.getCollections();
+        const [albums, songs, solos] = await this.getCollections(true);
         const users = await this.getPublicUsers();
         const matches = ([albums, songs, users] as unknown as { lowerName: string; }[][]).map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
@@ -162,7 +162,7 @@ export default class {
             matches[0].map(x => [{}, {}, x]),
             matches[1].map(x => [{}, x, albums.find(y => y.id === x.album)]),
             matches[2].map(x => x.name),
-            ...[albums.map(x => x.artist), songs.flatMap(x => x.genres)].map(arr => [...new Set(arr)]
+            ...[albums.map(x => x.artist), solos.flatMap(x => x.guitarists), songs.flatMap(x => x.genres)].map(arr => [...new Set(arr)]
                 .map(x => [x, compareTwoStrings(str.toLowerCase(), x.toLowerCase())] as const)
                 .filter(x => x[1] > 0.25)
                 .sort((a, b) => b[1] - a[1])
