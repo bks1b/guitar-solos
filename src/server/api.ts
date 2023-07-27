@@ -113,7 +113,7 @@ export default Router()
             x.result.name,
             x.result.artist.name,
             x.result.release_date_components?.year,
-            (x.result.cover_art_url as string)?.replace(/\.(\d+)x(\d+)/, (s, a, b) => a === b ? '.300x300' : s),
+            (x.result.cover_art_url as string)?.replace(/\.(\d+)x(\d+)/, (s, a, b) => a === b && +a >= 300 ? '.300x300' : s),
         ])),
     ))
     .post('/admin/backup', handler((_, u) => {
