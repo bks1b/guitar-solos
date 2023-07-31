@@ -231,6 +231,7 @@ button:hover {
 
 .searchContainer input {
     width: min(50%, 300px);
+    padding: 4px;
 }
 
 .rate {

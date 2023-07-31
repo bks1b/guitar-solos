@@ -28,9 +28,9 @@ export const getReducer = (arr: string[]) => {
             forced: 0,
             apply(d: Solos) {
                 return d.filter(x => this.arr.every(y => {
-                    if (!y[3].length) return true;
                     const arr = y[1](x as any).map(s => s.toLowerCase());
-                    return y[3][y[4] ? 'every' : 'some'](s => +s.startsWith('%') ^ +arr.includes(s.replace(/^%/, '')));
+                    const [include, exclude] = y[3].reduce((a, b) => b.startsWith('%') ? [a[0], [...a[1], b.slice(1)]] : [[...a[0], b], a[1]], [[], []] as string[][]);
+                    return (!include.length || include[y[4] ? 'every' : 'some'](s => arr.includes(s))) && exclude.every(s => !arr.includes(s));
                 }));
             },
         },
