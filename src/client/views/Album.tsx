@@ -25,7 +25,7 @@ export default ({ id }: { id: string; }) => {
                     <h2><a className='label'>by</a> <a className='link' onClick={() => navigate([], [['artists', album[0].artist.toLowerCase()]])}>{album[0].artist}</a></h2>
                 </div>
             </div>
-            <a>Released in: <a className='link' onClick={() => navigate([], [['year', album[0].year + '']])}>{album[0].year}</a></a>
+            <a>Released in: <a className='link' onClick={() => navigate([], [['years', album[0].year + '']])}>{album[0].year}</a></a>
             {
                 admin
                     ? <>
