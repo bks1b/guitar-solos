@@ -39,7 +39,7 @@ export default () => {
         <ul>
             <li>The fields at the top of certain pages ("Charts" and profiles) allow you to filter and sort the listed solos.</li>
             <li>The dropdowns next to certain fields ("Genres" and "Guitarists") allow you to choose whether all or any of the queries must match.</li>
-            <li>By typing a percent sign (%) in front of a query, you can exclude the query from the results. For example, typing "death metal; %melodic death metal" into the "Genres" field and changing the mode to "all" shows all death metal songs that aren't melodic death metal.</li>
+            <li>By typing a percent sign (%) in front of a query, you can exclude the query from the results. For example, typing "death metal; %melodic death metal" into the "Genres" field shows all death metal songs that aren't melodic death metal.</li>
         </ul>
     </>;
 };

@@ -67,7 +67,7 @@ export default Router()
             album: req.body.album,
             name: req.body.name.trim(),
             youtube,
-            genres: (req.body.genres as string[]).map(x => x.trim().toLowerCase()),
+            genres: (req.body.genres as string[]).map(x => x.trim().toLowerCase()).filter(x => x),
         }, u.admin);
     }, true))
     .post('/add/solo', handler(async (req, u) => {

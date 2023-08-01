@@ -27,6 +27,6 @@ export type Solos = [Solo, Song, Album, number, number][];
 export type RatingStatsType = {
     ratings: number[][];
     albums: [Album, number, number, number, number, number][];
-    artists: [string, number, number, number, number, number, number][];
-    guitarists: [string, number, number, number, number, number][];
-};
+}
+    & Record<'guitarists' | 'genres', [string, number, number, number, number, number][]>
+    & Record<'artists' | 'years', [string, number, number, number, number, number, number][]>;

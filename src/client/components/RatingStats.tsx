@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { Fragment, useContext } from 'react';
 import { MainContext, RatingStatsType, toFixed } from '../util';
 import List from './List';
 
@@ -36,20 +36,30 @@ export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }
                 <a>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</a>
             </div>
         </div>)} step={STEP}/>
-        <h1>Highest rated artists</h1>
-        <List arr={data.artists.map((x, i) => <div key={i}>
-            <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['artists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
-            <ul>
-                <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
-                <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
-            </ul>
-        </div>)} step={STEP}/>
+        {(['artists', 'years'] as const).map(k => <Fragment key={k}>
+            <h1>Highest rated {k}</h1>
+            <List arr={data[k].map((x, i) => <div key={i}>
+                <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [[k, x[0].toLowerCase()]])}>{x[0]}</a></h3>
+                <ul>
+                    <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
+                    <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
+                </ul>
+            </div>)} step={STEP}/>
+        </Fragment>)}
         <h1>Highest rated guitarists</h1>
         <List arr={data.guitarists.map((x, i) => <div key={i}>
             <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['guitarists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
             <ul>
                 <li>{x[5]} solos, {x[1]} artists</li>
                 <li>{toFixed(x[3])}/10 average rating, {x[4]} total ratings</li>
+            </ul>
+        </div>)} step={STEP}/>
+        <h1>Highest rated genres</h1>
+        <List arr={data.genres.map((x, i) => <div key={i}>
+            <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['genres', x[0]]])}>{x[0]}</a></h3>
+            <ul>
+                <li>{x[1]} songs, {x[2]} solos</li>
+                <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
             </ul>
         </div>)} step={STEP}/>
     </div>;

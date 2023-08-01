@@ -23,7 +23,7 @@ export const getReducer = (arr: string[]) => {
                 ['artists', x => [x[2].artist], false],
                 ['guitarists', x => x[0].guitarists, true],
                 ['genres', x => x[1].genres, true],
-                ['year', x => [x[2].year + ''], false],
+                ['years', x => [x[2].year + ''], false],
             ] as [string, (x: Solos[number]) => string[], boolean][]).map(x => [...x, params.get(x[0])?.toLowerCase().split(';') || [], params.get(x[0] + '_mode') === 'all'] as Filter),
             forced: 0,
             apply(d: Solos) {
