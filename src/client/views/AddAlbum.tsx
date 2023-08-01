@@ -6,6 +6,7 @@ export default () => {
     const refs = ['name', 'artist', 'year', 'cover'].map(k => [k, useRef<HTMLInputElement>(null)] as const);
     const search = useRef<HTMLInputElement>(null);
     const [results, setResults] = useState<string[][]>([]);
+    const geniusSearch = () => request<string[][]>('/genius', { query: search.current!.value }, d => setResults(d));
     useEffect(() => {
         document.title = 'Add Album | Guitar Solos';
     }, []);
@@ -20,7 +21,7 @@ export default () => {
         <br/>
         <button onClick={() => request<{ id: string; }>('/add/album', Object.fromEntries(refs.map((x, i) => [x[0], i === 2 ? +x[1].current!.value : x[1].current!.value])), d => navigate(['album', d.id]))}>Add</button>
         <hr/>
-        <input ref={search}/> <button onClick={() => request<string[][]>('/genius', { query: search.current!.value }, d => setResults(d))}>Search on Genius</button>
+        <input ref={search} onKeyDown={e => e.key === 'Enter' && geniusSearch()}/> <button onClick={geniusSearch}>Search on Genius</button>
         <ul>{results.map((x, i) => <li key={i}>{x[1]} - {x[0]}{x[2] ? ` (${x[2]})` : ''} <button onClick={() => refs.forEach((r, j) => r[1].current!.value = x[j] || '')}>Load</button></li>)}</ul>
     </>;
 };
