@@ -96,6 +96,11 @@ export default Router()
         if (!await (await db.db).collection<Solo>('solos').findOne({ id: req.body.id })) throw 'Solo not found.';
         await db.editUser(getHeader(req), { $set: { ratings: [...u.ratings.filter(x => x.id !== req.body.id), { id: req.body.id, rating: req.body.rating }] } });
     }, true))
+    .post('/unrate', handler(async (req, u) => {
+        if (typeof req.body?.id !== 'string') throw 'ID expected.';
+        if (!await (await db.db).collection<Solo>('solos').findOne({ id: req.body.id })) throw 'Solo not found.';
+        await db.editUser(getHeader(req), { $set: { ratings: u.ratings.filter(x => x.id !== req.body.id) } });
+    }, true))
     .get('/discover', handler((_, u) => db.discover(u), true))
     .post('/profile', handler(async req => {
         if (typeof req.body?.name !== 'string') throw 'Name expected.';
