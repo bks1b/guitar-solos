@@ -7,7 +7,7 @@ const STEP = 20;
 const LIST_STEP = 10;
 
 export default ({ str }: { str: string; }) => {
-    const { request, navigate } = useContext(MainContext)!;
+    const { request, navigateOnClick } = useContext(MainContext)!;
     const [data, setData] = useState<Data>();
     useEffect(() => {
         document.title = 'Search | Guitar Solos';
@@ -27,7 +27,7 @@ export default ({ str }: { str: string; }) => {
                 data[i + 2].length
                     ? <>
                         <h1>{x}</h1>
-                        <List arr={(data[i + 2] as string[]).map((y, j) => <li key={j} className='link' onClick={() => navigate(...(i ? [[], [[x.toLowerCase(), y.toLowerCase()]]] : [['profile', y]]) as [string[], string[][]])}>{y}</li>)} step={LIST_STEP} render={a => <ul>{a}</ul>}/>
+                        <List arr={(data[i + 2] as string[]).map((y, j) => <li key={j} className='link' {...navigateOnClick(...(i ? [[], [[x.toLowerCase(), y.toLowerCase()]]] : [['profile', y]]) as [string[], string[][]])}>{y}</li>)} step={LIST_STEP} render={a => <ul>{a}</ul>}/>
                     </>
                     : ''
             }</Fragment>)}

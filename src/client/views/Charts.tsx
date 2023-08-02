@@ -6,7 +6,7 @@ import Filters, { getReducer } from '../components/Filters';
 const getScore = (x: Solos[number]) => x[4] ? x[3] / x[4] ** 0.8 : 0;
 
 export default () => {
-    const { request, navigate } = useContext(MainContext)!;
+    const { request, navigateOnClick } = useContext(MainContext)!;
     const [data, setData] = useState<Solos>();
     const [state, dispatch] = getReducer(['score', 'popularity', 'length', 'year']);
     useEffect(() => {
@@ -26,9 +26,9 @@ export default () => {
             results.length
                 ? results.map((x, i) => <div key={i} className='albumInfo chart'>
                     <h1>{i + 1}.</h1>
-                    <img src={x[2].cover} className='link' onClick={() => navigate(['album', x[2].id])}/>
+                    <img src={x[2].cover} className='link' {...navigateOnClick(['album', x[2].id])}/>
                     <div>
-                        <h2 className='link' onClick={() => navigate(['song', x[1].id])}>{x[1].name}</h2>
+                        <h2 className='link' {...navigateOnClick(['song', x[1].id])}>{x[1].name}</h2>
                         <h2 className='link' onClick={() => dispatch(['filter', 0, [x[2].artist.toLowerCase()], true])}>{x[2].artist}</h2>
                         <h3>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h3>
                         <Ratings sum={x[3]} count={x[4]}/>

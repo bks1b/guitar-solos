@@ -1,7 +1,7 @@
-import { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Auth, User } from '../types';
-import { isMobile, MainContext, RequestFn } from './util';
+import { isMobile, MainContext, RequestFn, resolvePath } from './util';
 import AddAlbum from './views/AddAlbum';
 import Album from './views/Album';
 import Charts from './views/Charts';
@@ -32,8 +32,24 @@ const App = () => {
     });
     const getPath = () => decodeURIComponent(window.location.pathname).split('/').slice(1).filter(x => x);
     const navigate = (arr: string[], q?: string[][]) => {
-        window.history.pushState('', '', '/' + arr.map(x => encodeURIComponent(x)).join('/') + (q ? '?' + new URLSearchParams(q) : ''));
+        window.history.pushState('', '', resolvePath(arr, q));
         setPath(arr);
+    };
+    const navigateOnClick = (arr: string[], q?: string[][]) => {
+        let isTarget = false;
+        return {
+            onMouseDown: (e: MouseEvent) => {
+                e.preventDefault();
+                isTarget = true;
+            },
+            onMouseOut: () => isTarget = false,
+            onMouseUp: (e: MouseEvent) => {
+                if (!isTarget) return;
+                isTarget = false;
+                if (e.button === 1) window.open(resolvePath(arr, q));
+                else if (e.button === 0) navigate(arr, q);
+            },
+        };
     };
     const [user, setUser] = useState<{
         loggedIn: boolean;
@@ -89,7 +105,7 @@ const App = () => {
     lastStateStr = stateStr;
     return wait
         ? <></>
-        : <MainContext.Provider value={{ request, navigate, loggedIn: user.loggedIn, admin: user.admin! }}>
+        : <MainContext.Provider value={{ request, navigate, navigateOnClick, loggedIn: user.loggedIn, admin: user.admin! }}>
             {
                 popup
                     ? <div className='popupContainer' onClick={e => {
@@ -139,7 +155,7 @@ const App = () => {
                                 ['Help', ['help']],
                                 ['Rules', ['rules']],
                                 ...user.admin ? [['Admin', ['admin']]] : [],
-                            ] as [string, string[]][]).map((x, i) => <div key={i} onClick={() => navigate(x[1])} className={path === x[1] ? 'selected' : ''}>{x[0]}</div>)}
+                            ] as [string, string[]][]).map((x, i) => <div key={i} {...navigateOnClick(x[1], [])} className={path === x[1] ? 'selected' : ''}>{x[0]}</div>)}
                             {
                                 user.loggedIn
                                     ? <>

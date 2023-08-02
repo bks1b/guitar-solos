@@ -8,7 +8,7 @@ import LinkList from '../components/LinkList';
 const TimeInput = ({ _ref, sec }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref}/>;
 
 export default ({ id }: { id: string; }) => {
-    const { request, navigate, loggedIn, admin } = useContext(MainContext)!;
+    const { request, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
     const [reload, setReload] = useState(0);
     const [song, setSong] = useState<[Song, Album, [Solo, Solos, number, number, number][]]>();
     const startM = useRef<HTMLInputElement>(null);
@@ -31,8 +31,8 @@ export default ({ id }: { id: string; }) => {
                 <img src={song[1].cover}/>
                 <div>
                     <h1>{song[0].name}</h1>
-                    <h2><a className='label'>by</a> <a className='link' onClick={() => navigate([], [['artists', song[1].artist.toLowerCase()]])}>{song[1].artist}</a></h2>
-                    <h2><a className='label'>on</a> <a className='link' onClick={() => navigate(['album', song[1].id])}>{song[1].name}</a></h2>
+                    <h2><a className='label'>by</a> <a className='link' {...navigateOnClick([], [['artists', song[1].artist.toLowerCase()]])}>{song[1].artist}</a></h2>
+                    <h2><a className='label'>on</a> <a className='link' {...navigateOnClick(['album', song[1].id])}>{song[1].name}</a></h2>
                 </div>
             </div>
             <a>Genres: <LinkList arr={song[0].genres} query='genres'/></a>

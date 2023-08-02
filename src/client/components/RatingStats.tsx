@@ -5,7 +5,7 @@ import List from './List';
 const STEP = 10;
 
 export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }) => {
-    const { navigate } = useContext(MainContext)!;
+    const { navigateOnClick } = useContext(MainContext)!;
     const total = data.ratings.reduce((a, b) => a + b[1], 0);
     return <div>
         <a>Average rating: {toFixed(data.ratings.reduce((a, b) => a + b[0] * b[1], 0) / total)}/10</a>
@@ -27,10 +27,10 @@ export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }
         <h1>Highest rated albums</h1>
         <List arr={data.albums.map((x, i) => <div key={i} className='albumInfo chart'>
             <h2>{i + 1}.</h2>
-            <img src={x[0].cover} className='link' onClick={() => navigate(['album', x[0].id])}/>
+            <img src={x[0].cover} className='link' {...navigateOnClick(['album', x[0].id])}/>
             <div>
-                <h2 className='link' onClick={() => navigate(['album', x[0].id])}>{x[0].name}</h2>
-                <h2 className='link' onClick={() => navigate(path, [['artists', x[0].artist.toLowerCase()]])}>{x[0].artist}</h2>
+                <h2 className='link' {...navigateOnClick(['album', x[0].id])}>{x[0].name}</h2>
+                <h2 className='link' {...navigateOnClick(path, [['artists', x[0].artist.toLowerCase()]])}>{x[0].artist}</h2>
                 <a>{x[1]} songs, {x[2]} solos</a>
                 <br/>
                 <a>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</a>
@@ -39,7 +39,7 @@ export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }
         {(['artists', 'years'] as const).map(k => <Fragment key={k}>
             <h1>Highest rated {k}</h1>
             <List arr={data[k].map((x, i) => <div key={i}>
-                <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [[k, x[0].toLowerCase()]])}>{x[0]}</a></h3>
+                <h3>{i + 1}. <a className='link' {...navigateOnClick(path, [[k, x[0].toLowerCase()]])}>{x[0]}</a></h3>
                 <ul>
                     <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
                     <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
@@ -48,7 +48,7 @@ export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }
         </Fragment>)}
         <h1>Highest rated guitarists</h1>
         <List arr={data.guitarists.map((x, i) => <div key={i}>
-            <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['guitarists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
+            <h3>{i + 1}. <a className='link' {...navigateOnClick(path, [['guitarists', x[0].toLowerCase()]])}>{x[0]}</a></h3>
             <ul>
                 <li>{x[5]} solos, {x[1]} artists</li>
                 <li>{toFixed(x[3])}/10 average rating, {x[4]} total ratings</li>
@@ -56,7 +56,7 @@ export default ({ data, path = [] }: { data: RatingStatsType; path?: string[]; }
         </div>)} step={STEP}/>
         <h1>Highest rated genres</h1>
         <List arr={data.genres.map((x, i) => <div key={i}>
-            <h3>{i + 1}. <a className='link' onClick={() => navigate(path, [['genres', x[0]]])}>{x[0]}</a></h3>
+            <h3>{i + 1}. <a className='link' {...navigateOnClick(path, [['genres', x[0]]])}>{x[0]}</a></h3>
             <ul>
                 <li>{x[1]} songs, {x[2]} solos</li>
                 <li>{toFixed(x[4])}/10 average rating, {x[5]} total ratings</li>
