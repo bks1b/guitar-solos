@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Auth, User } from '../types';
 import { isMobile, MainContext, RequestFn } from './util';
@@ -50,6 +50,16 @@ const App = () => {
     const password = useRef<HTMLInputElement>(null);
     const isPublic = useRef<HTMLInputElement>(null);
     const search = useRef<HTMLInputElement>(null);
+    const submitSearch = () => navigate(['search', search.current!.value]);
+    const submitPopup = () => {
+        const auth = [username.current!.value, password.current!.value, { public: isPublic.current?.checked }] as Auth;
+        request<User>('/auth/' + popup, auth, d => {
+            localStorage.setItem('auth', JSON.stringify(auth));
+            setUser({ loggedIn: true, auth, ...d });
+            setPopup(false);
+        });
+    };
+    const popupKeydown = (e: KeyboardEvent) => e.key === 'Enter' && submitPopup();
     useEffect(() => {
         window.onpopstate = () => setPath(getPath());
         try {
@@ -86,9 +96,9 @@ const App = () => {
                         if ((e.target as HTMLElement).className === 'popupContainer') setPopup(false);
                     }}>
                         <div className='popup'>
-                            <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''}/></label>
+                            <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''} onKeyDown={popupKeydown}/></label>
                             <br/>
-                            <label>Password: <input type='password' ref={password}/></label>
+                            <label>Password: <input type='password' ref={password} onKeyDown={popupKeydown}/></label>
                             <br/>
                             {
                                 popup === 'login'
@@ -98,14 +108,7 @@ const App = () => {
                                         <br/>
                                     </>
                             }
-                            <button onClick={async () => {
-                                const auth = [username.current!.value, password.current!.value, { public: isPublic.current?.checked }] as Auth;
-                                request<User>('/auth/' + popup, auth, d => {
-                                    localStorage.setItem('auth', JSON.stringify(auth));
-                                    setUser({ loggedIn: true, auth, ...d });
-                                    setPopup(false);
-                                });
-                            }}>{popup === 'edit' ? 'Save' : popup === 'login' ? 'Log in' : 'Sign up'}</button>
+                            <button onClick={submitPopup}>{popup === 'edit' ? 'Save' : popup === 'login' ? 'Log in' : 'Sign up'}</button>
                         </div>
                     </div>
                     : ''
@@ -117,10 +120,8 @@ const App = () => {
                     <div></div>
                 </div>
                 <div className='searchContainer'>
-                    <input ref={search} onKeyDown={e => {
-                        if (e.key === 'Enter') navigate(['search', search.current!.value]);
-                    }}/>
-                    <button onClick={() => navigate(['search', search.current!.value])}>Search</button>
+                    <input ref={search} onKeyDown={e => e.key === 'Enter' && submitSearch()}/>
+                    <button onClick={submitSearch}>Search</button>
                 </div>
             </div>
             <div className='body'>
