@@ -217,7 +217,7 @@ export default class {
         const ratings = users.flatMap(x => x.ratings);
         const ratingStats = this.getRatingStats(ratings, <Collections><unknown>[albums, songs, solos]);
         return {
-            total: [users.length, solos.length, songs.length, albums.length, ratingStats.artists.length],
+            total: [users.length, solos.length, songs.length, albums.length, ratingStats.artists.length, ratingStats.guitarists.length],
             averageDuration: solos.reduce((a, b) => a + b.end - b.start, 0) / solos.length,
             ...ratingStats,
         };
