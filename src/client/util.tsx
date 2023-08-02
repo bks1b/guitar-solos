@@ -5,6 +5,7 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 
 export const MainContext = createContext<Ctx | null>(null);
 
+export const resolvePath = (arr: string[], q?: string[][]) => '/' + arr.map(x => encodeURIComponent(x)).join('/') + (q?.length ? '?' + new URLSearchParams(q) : '');
 export const updateParams = (arr: string[][]) => {
     const path = window.location.pathname + (arr.length ? '?' + new URLSearchParams(Object.fromEntries(arr)) : '');
     if (window.location.pathname + window.location.search !== path) window.history.pushState('', '', path);
@@ -20,7 +21,8 @@ type Ctx = {
     loggedIn: boolean;
     admin: boolean;
     request: RequestFn;
-    navigate: (x: string[], q?: string[][]) => void;
+    navigate: (arr: string[], q?: string[][]) => void;
+    navigateOnClick: (arr: string[], q?: string[][]) => {};
 };
 export type RequestFn = <T>(str: string, body: Record<string, any> | null, cb: (x: T) => any, err?: (x: string) => any) => Promise<any>;
 export type Solos = [Solo, Song, Album, number, number][];

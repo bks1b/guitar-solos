@@ -3,7 +3,7 @@ import { Album, Song } from '../../types';
 import { MainContext } from '../util';
 
 export default ({ id }: { id: string; }) => {
-    const { request, navigate, loggedIn, admin } = useContext(MainContext)!;
+    const { request, navigate, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
     const [reload, setReload] = useState(0);
     const [album, setAlbum] = useState<[Album, Song[]]>();
     const name = useRef<HTMLInputElement>(null);
@@ -22,10 +22,10 @@ export default ({ id }: { id: string; }) => {
                 <img src={album[0].cover}/>
                 <div>
                     <h1>{album[0].name}</h1>
-                    <h2><a className='label'>by</a> <a className='link' onClick={() => navigate([], [['artists', album[0].artist.toLowerCase()]])}>{album[0].artist}</a></h2>
+                    <h2><a className='label'>by</a> <a className='link' {...navigateOnClick([], [['artists', album[0].artist.toLowerCase()]])}>{album[0].artist}</a></h2>
                 </div>
             </div>
-            <a>Released in: <a className='link' onClick={() => navigate([], [['years', album[0].year + '']])}>{album[0].year}</a></a>
+            <a>Released in: <a className='link' {...navigateOnClick([], [['years', album[0].year + '']])}>{album[0].year}</a></a>
             {
                 admin
                     ? <>
@@ -55,7 +55,7 @@ export default ({ id }: { id: string; }) => {
                 album[1].length
                     ? <>
                         <hr/>
-                        {album[1].map((x, i) => <h2 key={i} onClick={() => navigate(['song', x.id])} className='link'>{x.name}</h2>)}
+                        {album[1].map((x, i) => <h2 key={i} {...navigateOnClick(['song', x.id])} className='link'>{x.name}</h2>)}
                     </>
                     : ''
             }
