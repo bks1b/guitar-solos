@@ -1,7 +1,7 @@
-import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Auth, User } from '../types';
-import { isMobile, MainContext, RequestFn, resolvePath } from './util';
+import { enterKeydown, isMobile, MainContext, onClick, RequestFn, resolvePath } from './util';
 import AddAlbum from './views/AddAlbum';
 import Album from './views/Album';
 import Charts from './views/Charts';
@@ -35,22 +35,7 @@ const App = () => {
         window.history.pushState('', '', resolvePath(arr, q));
         setPath(arr);
     };
-    const navigateOnClick = (arr: string[], q?: string[][]) => {
-        let isTarget = false;
-        return {
-            onMouseDown: (e: MouseEvent) => {
-                e.preventDefault();
-                isTarget = true;
-            },
-            onMouseOut: () => isTarget = false,
-            onMouseUp: (e: MouseEvent) => {
-                if (!isTarget) return;
-                isTarget = false;
-                if (e.button === 1) window.open(resolvePath(arr, q));
-                else if (e.button === 0) navigate(arr, q);
-            },
-        };
-    };
+    const navigateOnClick = (arr: string[], q?: string[][]) => onClick(() => navigate(arr, q), () => window.open(resolvePath(arr, q)));
     const [user, setUser] = useState<{
         loggedIn: boolean;
         auth?: Auth;
@@ -66,7 +51,6 @@ const App = () => {
     const password = useRef<HTMLInputElement>(null);
     const isPublic = useRef<HTMLInputElement>(null);
     const search = useRef<HTMLInputElement>(null);
-    const submitSearch = () => navigate(['search', search.current!.value]);
     const submitPopup = () => {
         const auth = [username.current!.value, password.current!.value, { public: isPublic.current?.checked }] as Auth;
         request<User>('/auth/' + popup, auth, d => {
@@ -75,7 +59,6 @@ const App = () => {
             setPopup(false);
         });
     };
-    const popupKeydown = (e: KeyboardEvent) => e.key === 'Enter' && submitPopup();
     useEffect(() => {
         window.onpopstate = () => setPath(getPath());
         try {
@@ -112,9 +95,9 @@ const App = () => {
                         if ((e.target as HTMLElement).className === 'popupContainer') setPopup(false);
                     }}>
                         <div className='popup'>
-                            <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''} onKeyDown={popupKeydown}/></label>
+                            <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''} {...enterKeydown(submitPopup)}/></label>
                             <br/>
-                            <label>Password: <input type='password' ref={password} onKeyDown={popupKeydown}/></label>
+                            <label>Password: <input type='password' ref={password} {...enterKeydown(submitPopup)}/></label>
                             <br/>
                             {
                                 popup === 'login'
@@ -136,8 +119,8 @@ const App = () => {
                     <div></div>
                 </div>
                 <div className='searchContainer'>
-                    <input ref={search} onKeyDown={e => e.key === 'Enter' && submitSearch()}/>
-                    <button onClick={submitSearch}>Search</button>
+                    <input ref={search} {...enterKeydown(() => navigate(['search', search.current!.value]))}/>
+                    <button {...onClick(() => navigate(['search', search.current!.value]), () => window.open('/search/' + search.current!.value))}>Search</button>
                 </div>
             </div>
             <div className='body'>

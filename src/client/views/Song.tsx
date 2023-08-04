@@ -2,10 +2,10 @@ import { RefObject, useContext, useEffect, useRef, useState } from 'react';
 import { Album, Solo, Song } from '../../types';
 import Albums from '../components/Albums';
 import Ratings from '../components/Ratings';
-import { getSecs, getTimestamp, MainContext, Solos } from '../util';
+import { enterKeydown, getSecs, getTimestamp, MainContext, Solos } from '../util';
 import LinkList from '../components/LinkList';
 
-const TimeInput = ({ _ref, sec }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref}/>;
+const TimeInput = ({ _ref, sec, f }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; f: () => any; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref} {...enterKeydown(f)}/>;
 
 export default ({ id }: { id: string; }) => {
     const { request, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
@@ -19,6 +19,15 @@ export default ({ id }: { id: string; }) => {
     const edit = useRef<HTMLTextAreaElement>(null);
     const ratings: Record<string, HTMLInputElement> = {};
     const solos: Record<string, HTMLInputElement> = {};
+    const submit = () => request('/add/solo', {
+        song: id,
+        start: getSecs(startM, startS),
+        end: +endM.current!.value * 60 + +endS.current!.value,
+        guitarists: guitarists.current!.value.split(';'),
+    }, () => {
+        startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = guitarists.current!.value = '';
+        setReload(reload + 1);
+    });
     useEffect(() => {
         request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x));
     }, [reload]);
@@ -121,21 +130,13 @@ export default ({ id }: { id: string; }) => {
                     ? <>
                         <hr/>
                         <h1>Add solo</h1>
-                        <label>Start: <TimeInput _ref={startM}/>:<TimeInput sec _ref={startS}/></label>
+                        <label>Start: <TimeInput _ref={startM} f={submit}/>:<TimeInput sec _ref={startS} f={submit}/></label>
                         <br/>
-                        <label>End: <TimeInput _ref={endM}/>:<TimeInput sec _ref={endS}/></label>
+                        <label>End: <TimeInput _ref={endM} f={submit}/>:<TimeInput sec _ref={endS} f={submit}/></label>
                         <br/>
-                        <label>Guitarists (leave empty if unknown): <input placeholder='Separated by ;' ref={guitarists}/></label>
+                        <label>Guitarists (leave empty if unknown): <input placeholder='Separated by ;' ref={guitarists} {...enterKeydown(submit)}/></label>
                         <br/>
-                        <button onClick={() => request('/add/solo', {
-                            song: id,
-                            start: getSecs(startM, startS),
-                            end: +endM.current!.value * 60 + +endS.current!.value,
-                            guitarists: guitarists.current!.value.split(';'),
-                        }, () => {
-                            startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = guitarists.current!.value = '';
-                            setReload(reload + 1);
-                        })}>Add</button>
+                        <button onClick={submit}>Add</button>
                     </>
                     : <></>
             }

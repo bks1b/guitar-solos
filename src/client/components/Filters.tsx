@@ -34,11 +34,14 @@ export const getReducer = (arr: string[]) => {
                 }));
             },
         },
-        getParams() {
+        getParams(i?: number, s?: string) {
             return [
                 ...this.sort.sort ? [['sort', arr[this.sort.sort]]] : [],
                 ...this.sort.order ? [] : [['order', orderBy[0]]],
-                ...this.filters.arr.flatMap((x: Filter) => x[3].length ? [[x[0], x[3].join(';')], ...x[2] && x[4] ? [[x[0] + '_mode', 'all']] : []] : []),
+                ...this.filters.arr.flatMap((x: Filter, j: number) => {
+                    const arr = [...x[3], ...i === j && !x[3].includes(s!) ? [s] : []];
+                    return arr.length ? [[x[0], arr.join(';')], ...x[2] && x[4] ? [[x[0] + '_mode', 'all']] : []] : [];
+                }),
             ];
         },
     });
@@ -70,6 +73,6 @@ type State = {
         forced: number;
         apply(d: Solos): Solos;
     };
-    getParams(): string[][];
+    getParams(i?: number, s?: string): string[][];
 };
 type Action = ['sort', 'sort' | 'order', number] | ['filter', number, string[], boolean?] | ['filterMode', number, boolean];
