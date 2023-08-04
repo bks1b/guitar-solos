@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
-import { MainContext, RatingStatsType, Solos, updateParams } from '../util';
+import { MainContext, RatingStatsType, Solos, resolveParams, updateParams } from '../util';
 import Filters, { getReducer } from '../components/Filters';
 import RatingStats from '../components/RatingStats';
 
@@ -37,7 +37,7 @@ export default ({ name }: { name: string; }) => {
                 </div>
                 : <>
                     <div style={{ marginBottom: 'var(--content-padding)' }}><Filters state={state} dispatch={dispatch}/></div>
-                    <Albums arr={arr} navigateArtist={a => dispatch(['filter', 0, [a], true])} ratings ts/>
+                    <Albums arr={arr} navigateArtist={a => [() => dispatch(['filter', 0, [a], true]), () => window.open(resolveParams(state.getParams(0, a)))]} ratings ts/>
                 </>
         }
     </>;

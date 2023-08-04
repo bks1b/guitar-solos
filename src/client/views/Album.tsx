@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Album, Song } from '../../types';
-import { MainContext } from '../util';
+import { MainContext, enterKeydown } from '../util';
 
 export default ({ id }: { id: string; }) => {
     const { request, navigate, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
@@ -10,6 +10,12 @@ export default ({ id }: { id: string; }) => {
     const genres = useRef<HTMLInputElement>(null);
     const yt = useRef<HTMLInputElement>(null);
     const edit = useRef<HTMLTextAreaElement>(null);
+    const submit = () => request<{ id: string; }>('/add/song', {
+        name: name.current!.value,
+        album: id,
+        genres: genres.current!.value.split(','),
+        youtube: yt.current!.value,
+    }, d => navigate(['song', d.id]));
     useEffect(() => {
         request<[Album, Song[]]>('/get/album?id=' + id, null, x => setAlbum(x));
     }, [reload]);
@@ -64,18 +70,13 @@ export default ({ id }: { id: string; }) => {
                     ? <>
                         <hr/>
                         <h1>Add song</h1>
-                        <label>Name: <input ref={name}/></label>
+                        <label>Name: <input ref={name} {...enterKeydown(submit)}/></label>
                         <br/>
-                        <label>Genres: <input ref={genres} placeholder='Separated by ,'/></label>
+                        <label>Genres: <input ref={genres} placeholder='Separated by ,' {...enterKeydown(submit)}/></label>
                         <br/>
-                        <label>YouTube URL or ID: <input ref={yt}/></label>
+                        <label>YouTube URL or ID: <input ref={yt} {...enterKeydown(submit)}/></label>
                         <br/>
-                        <button onClick={() => request<{ id: string; }>('/add/song', {
-                            name: name.current!.value,
-                            album: id,
-                            genres: genres.current!.value.split(','),
-                            youtube: yt.current!.value,
-                        }, d => navigate(['song', d.id]))}>Add</button>
+                        <button onClick={submit}>Add</button>
                     </>
                     : ''
             }
