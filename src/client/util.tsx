@@ -2,6 +2,7 @@ import { createContext, KeyboardEvent, MouseEvent, RefObject } from 'react';
 import { Album, Solo, Song } from '../types';
 
 export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+export const orderBy = ['ascending', 'descending'];
 
 export const MainContext = createContext<Ctx | null>(null);
 
