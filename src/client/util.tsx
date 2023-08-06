@@ -30,7 +30,12 @@ export const onClick = (left: () => any, middle: () => any = left) => {
 export const enterKeydown = (f: () => any) => ({ onKeyDown: (e: KeyboardEvent) => e.key === 'Enter' && f() });
 
 export const toFixed = (n: number) => +n.toFixed(1);
-export const getSecs = (m: RefObject<HTMLInputElement>, s: RefObject<HTMLInputElement>) => +m.current!.value * 60 + +s.current!.value;
+export const getSecs = (m: RefObject<HTMLInputElement>, s: RefObject<HTMLInputElement>) => {
+    if ([m, s].some(x => !x.current!.value)) throw 'Timestamp expected.';
+    if ([m, s].some(x => +x.current!.value < 0)) throw 'Timestamps expected to be nonnegative.';
+    if (+s.current!.value > 59) throw 'Seconds expected to be between 0 and 59 (inclusive).';
+    return +m.current!.value * 60 + +s.current!.value;
+};
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
 
 export const genius = <a href='https://genius.com/' target='_blank'>Genius</a>;
