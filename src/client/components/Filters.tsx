@@ -1,9 +1,7 @@
 import { Dispatch, Fragment, useReducer } from 'react';
-import { Solos } from '../util';
+import { Solos, orderBy } from '../util';
 
-const orderBy = ['ascending', 'descending'];
-
-export const getReducer = (arr: string[]) => {
+export const getFilterReducer = (arr: string[]) => {
     const params = new URLSearchParams(window.location.search);
     return useReducer((state: State, action: Action) => {
         if (action[0] === 'filter') {

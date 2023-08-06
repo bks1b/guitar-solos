@@ -190,25 +190,25 @@ export default class {
         }).filter(x => x[2]);
         return {
             ratings: Array.from({ length: 11 }, (_, i) => [i, ratings.filter(x => x.rating === i).length]).filter(x => x[1]),
-            albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]).sort((a, b) => b[3] - a[3]),
+            albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]),
             ...<Record<'artists' | 'years', any[]>>Object.fromEntries((<const>['artist', 'year']).map(k => [k + 's', [...new Set(albumScores.map(x => x[0][k]))].map(x => {
                 const arr = albumScores.filter(a => a[0][k] === x);
                 return <const>[x + '', arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(arr.flatMap(a => a[3])), arr.length];
-            }).sort((a, b) => b[3] - a[3])])),
+            })])),
             guitarists: [...new Set(ratedSolos.flatMap(x => x[0].guitarists))].map(x => {
                 const arr = ratedSolos.filter(s => s[0].guitarists.includes(x));
                 return <const>[
                     x,
                     new Set(arr.map(s => this.getSolo(s[0].id, <Collections><unknown>[albums, songs, solos])[2].artist)).size,
-                    ...getScore(arr.flatMap(s => s[1])),
                     arr.length,
+                    ...getScore(arr.flatMap(s => s[1])),
                 ];
-            }).sort((a, b) => b[2] - a[2]),
+            }),
             genres: [...new Set(ratedSongs.flatMap(x => x[0].genres))].map(x => {
                 const songArr = ratedSongs.filter(s => s[0].genres.includes(x));
                 const soloArr = songArr.flatMap(s => s[1]);
                 return <const>[x, songArr.length, soloArr.length, ...getScore(soloArr.flatMap(s => s[1]))];
-            }).sort((a, b) => b[3] - a[3]),
+            }),
         };
     }
 

@@ -1,16 +1,18 @@
 import { useContext, useEffect, useState } from 'react';
-import { MainContext, RatingStatsType, getTimestamp, toFixed } from '../util';
-import RatingStats from '../components/RatingStats';
+import { MainContext, RatingStatsType, getTimestamp, toFixed, updateParams } from '../util';
+import RatingStats, { getSortReducer } from '../components/RatingStats';
 
 const keys = ['solo', 'song', 'album', 'artist', 'guitarist'];
 
 export default () => {
     const { request } = useContext(MainContext)!;
     const [data, setData] = useState<Stats>();
+    const [state, dispatch] = getSortReducer();
     useEffect(() => {
         document.title = 'Stats | Guitar Solos';
         request<Stats>('/stats', null, x => setData(x));
     }, []);
+    useEffect(() => updateParams(state.getParams()));
     return data
         ? <>
             <h1>Info</h1>
@@ -24,7 +26,7 @@ export default () => {
                 <li>{toFixed(data.ratings.reduce((a, b) => a + b[1], 0) / data.total[0])} solos rated per user</li>
             </ul>
             <a>Average solo duration: {getTimestamp(Math.round(data.averageDuration))}</a>
-            <RatingStats data={data}/>
+            <RatingStats data={data} state={state} dispatch={dispatch}/>
         </>
         : <></>;
 };
