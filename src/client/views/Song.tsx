@@ -19,15 +19,21 @@ export default ({ id }: { id: string; }) => {
     const edit = useRef<HTMLTextAreaElement>(null);
     const ratings: Record<string, HTMLInputElement> = {};
     const solos: Record<string, HTMLInputElement> = {};
-    const submit = () => request('/add/solo', {
-        song: id,
-        start: getSecs(startM, startS),
-        end: +endM.current!.value * 60 + +endS.current!.value,
-        guitarists: guitarists.current!.value.split(';'),
-    }, () => {
-        startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = guitarists.current!.value = '';
-        setReload(reload + 1);
-    });
+    const submit = () => {
+        try {
+            request('/add/solo', {
+                song: id,
+                start: getSecs(startM, startS),
+                end: getSecs(endM, endS),
+                guitarists: guitarists.current!.value.split(';'),
+            }, () => {
+                startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = guitarists.current!.value = '';
+                setReload(reload + 1);
+            });
+        } catch (e) {
+            alert('Error: ' + e);
+        }
+    };
     useEffect(() => {
         request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x));
     }, [reload]);
