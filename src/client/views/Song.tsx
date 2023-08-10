@@ -118,7 +118,7 @@ export default ({ id }: { id: string; }) => {
                                     : ''
                             }
                             <h3 className='center'>Audio</h3>
-                            <iframe src={`https://www.youtube.com/embed/${song[0].youtube}?start=${x[0].start}`}/>
+                            <iframe src={`https://www.youtube.com/embed/${song[0].youtube}?start=${x[0].start}&end=${x[0].end + 2}`}/>
                             {
                                 x[1].length
                                     ? <>
