@@ -34,6 +34,7 @@ export default ({ id }: { id: string; }) => {
             alert('Error: ' + e);
         }
     };
+    const rate = (x: [Solo, ...any]) => () => request('/rate', { id: x[0].id, rating: +ratings[x[0].id].value }, () => setReload(reload + 1));
     useEffect(() => {
         request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x));
     }, [reload]);
@@ -94,8 +95,8 @@ export default ({ id }: { id: string; }) => {
                             {
                                 loggedIn
                                     ? <>
-                                        <label>Own rating: <input type='number' min={0} max={10} defaultValue={x[4]} ref={e => ratings[x[0].id] = e!} className='num'/>/10</label>
-                                        <button className='rate' onClick={() => request('/rate', { id: x[0].id, rating: +ratings[x[0].id].value }, () => setReload(reload + 1))}>Rate</button>
+                                        <label>Own rating: <input type='number' min={0} max={10} defaultValue={x[4]} ref={e => ratings[x[0].id] = e!} {...enterKeydown(rate(x))} className='num'/>/10</label>
+                                        <button className='rate' onClick={rate(x)}>Rate</button>
                                         {Number.isInteger(x[4]) ? <> <button onClick={() => request('/unrate', { id: x[0].id }, () => setReload(reload + 1))}>Unrate</button></> : ''}
                                         {
                                             admin
