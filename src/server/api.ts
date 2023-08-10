@@ -74,6 +74,7 @@ export default Router()
         if (typeof req.body?.song !== 'string') throw 'Song expected.';
         if (!checkInt(req.body?.start)) throw 'Start expected to be a nonnegative integer.';
         if (!checkInt(req.body?.end)) throw 'End expected to be a nonnegative integer.';
+        if (req.body.start >= req.body.end) throw 'End is expected to be greater than start.';
         if (!Array.isArray(req.body?.guitarists)) throw 'Guitarists expected.';
         await db.addSolo({
             song: req.body.song,
