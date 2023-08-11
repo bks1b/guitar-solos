@@ -4,6 +4,7 @@ import Albums from '../components/Albums';
 import Ratings from '../components/Ratings';
 import { enterKeydown, getSecs, getTimestamp, MainContext, Solos } from '../util';
 import LinkList from '../components/LinkList';
+import AuthText from '../components/AuthText';
 
 const TimeInput = ({ _ref, sec, f }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; f: () => any; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref} {...enterKeydown(f)}/>;
 
@@ -116,7 +117,7 @@ export default ({ id }: { id: string; }) => {
                                                 : ''
                                         }
                                     </>
-                                    : ''
+                                    : <AuthText text='rate this solo'/>
                             }
                             <h3 className='center'>Audio</h3>
                             <iframe src={`https://www.youtube.com/embed/${song[0].youtube}?start=${x[0].start}&end=${x[0].end + 2}`}/>
@@ -132,10 +133,10 @@ export default ({ id }: { id: string; }) => {
                     </>
                     : ''
             }
+            <hr/>
             {
                 loggedIn
                     ? <>
-                        <hr/>
                         <h1>Add solo</h1>
                         <label>Start: <TimeInput _ref={startM} f={submit}/>:<TimeInput sec _ref={startS} f={submit}/></label>
                         <br/>
@@ -145,7 +146,7 @@ export default ({ id }: { id: string; }) => {
                         <br/>
                         <button onClick={submit}>Add</button>
                     </>
-                    : <></>
+                    : <AuthText text='add solos to this song'/>
             }
         </>
         : <></>;
