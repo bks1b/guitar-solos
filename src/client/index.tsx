@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Auth, User } from '../types';
-import { enterKeydown, isMobile, MainContext, onClick, RequestFn, resolvePath } from './util';
+import { enterKeydown, isMobile, MainContext, onClick, PopupState, RequestFn, resolvePath } from './util';
 import AddAlbum from './views/AddAlbum';
 import Album from './views/Album';
 import Charts from './views/Charts';
@@ -45,7 +45,7 @@ const App = () => {
     }>({ loggedIn: false });
     const [path, setPath] = useState(getPath());
     const [sidebar, setSidebar] = useState(!isMobile);
-    const [popup, setPopup] = useState<false | 'login' | 'signup' | 'edit'>(false);
+    const [popup, setPopup] = useState<PopupState>(false);
     const [wait, setWait] = useState(!!localStorage.getItem('auth'));
     const username = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
@@ -88,7 +88,7 @@ const App = () => {
     lastStateStr = stateStr;
     return wait
         ? <></>
-        : <MainContext.Provider value={{ request, navigate, navigateOnClick, loggedIn: user.loggedIn, admin: user.admin! }}>
+        : <MainContext.Provider value={{ request, navigate, navigateOnClick, setPopup, loggedIn: user.loggedIn, admin: user.admin! }}>
             {
                 popup
                     ? <div className='popupContainer' onClick={e => {

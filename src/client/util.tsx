@@ -46,8 +46,10 @@ type Ctx = {
     request: RequestFn;
     navigate: (arr: string[], q?: string[][]) => void;
     navigateOnClick: (arr: string[], q?: string[][]) => {};
+    setPopup: (s: PopupState) => any;
 };
 export type RequestFn = <T>(str: string, body: Record<string, any> | null, cb: (x: T) => any, err?: (x: string) => any) => Promise<any>;
+export type PopupState = false | 'login' | 'signup' | 'edit';
 export type Solos = [Solo, Song, Album, number, number][];
 export type RatingStatsType = {
     ratings: number[][];

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Album, Song } from '../../types';
 import { MainContext, enterKeydown } from '../util';
+import AuthText from '../components/AuthText';
 
 export default ({ id }: { id: string; }) => {
     const { request, navigate, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
@@ -65,10 +66,10 @@ export default ({ id }: { id: string; }) => {
                     </>
                     : ''
             }
+            <hr/>
             {
                 loggedIn
                     ? <>
-                        <hr/>
                         <h1>Add song</h1>
                         <label>Name: <input ref={name} {...enterKeydown(submit)}/></label>
                         <br/>
@@ -78,7 +79,7 @@ export default ({ id }: { id: string; }) => {
                         <br/>
                         <button onClick={submit}>Add</button>
                     </>
-                    : ''
+                    : <AuthText text='add songs to this album'/>
             }
         </>
         : <></>;

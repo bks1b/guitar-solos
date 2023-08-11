@@ -1,5 +1,6 @@
 import { useContext, useEffect } from 'react';
 import { MainContext, genius } from '../util';
+import AuthText from '../components/AuthText';
 
 export default () => {
     const { loggedIn } = useContext(MainContext)!;
@@ -7,14 +8,7 @@ export default () => {
         document.title = 'Help | Guitar Solos';
     }, []);
     return <>
-        {
-            loggedIn
-                ? ''
-                : <>
-                    <a>You must be logged in to add albums/songs/solos and rate solos.</a>
-                    <br/>
-                </>
-        }
+        {loggedIn ? '' : <AuthText text='add albums/songs/solos and rate solos'/>}
         <a>Before adding an album/song/solo, use the search feature on the top to see if it has been added.</a>
         <h1>Adding solos</h1>
         <ul>
