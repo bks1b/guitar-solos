@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
-import { MainContext, Solos } from '../util';
+import { MainContext, Solos, onClick, resolvePath } from '../util';
 
 export default () => {
-    const { request } = useContext(MainContext)!;
+    const { request, navigate } = useContext(MainContext)!;
     const [data, setData] = useState<Solos>();
     useEffect(() => {
         request<Solos>('/discover', null, x => setData(x));
@@ -11,7 +11,12 @@ export default () => {
     useEffect(() => {
         document.title = 'Discover | Guitar Solos';
     }, []);
-    return data
-        ? <Albums arr={data} ts/>
-        : <></>;
+    return <>
+        <div className='row' style={{ marginBottom: 'var(--content-padding)' }}>{['album', 'song', 'solo'].map(x => <button key={x} {...onClick(m => request<Record<'id' | 'solo', string>>('/random/' + x, null, d => {
+            const path = [[x === 'album' ? x : 'song', d.id], x === 'solo' ? [[x, d.solo]] : []] as [string[], string[][]];
+            if (m) window.open(resolvePath(...path));
+            else navigate(...path);
+        }))}>Random {x}</button>)}</div>
+        {data ? <Albums arr={data} ts/> : ''}
+    </>;
 };

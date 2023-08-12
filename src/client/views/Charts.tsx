@@ -29,7 +29,7 @@ export default () => {
                     <img src={x[2].cover} className='link' {...navigateOnClick(['album', x[2].id])}/>
                     <div>
                         <h2 className='link' {...navigateOnClick(['song', x[1].id], [['solo', x[0].id]])}>{x[1].name}</h2>
-                        <h2 className='link' {...onClick(() => dispatch(['filter', 0, [x[2].artist.toLowerCase()], true]), () => window.open(resolveParams(state.getParams(0, x[2].artist.toLowerCase()))))}>{x[2].artist}</h2>
+                        <h2 className='link' {...onClick(m => m ? window.open(resolveParams(state.getParams(0, x[2].artist.toLowerCase()))) : dispatch(['filter', 0, [x[2].artist.toLowerCase()], true]))}>{x[2].artist}</h2>
                         <h3>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h3>
                         <Ratings sum={x[3]} count={x[4]}/>
                     </div>

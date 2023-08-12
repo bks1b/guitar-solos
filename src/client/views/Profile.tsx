@@ -38,7 +38,7 @@ export default ({ name }: { name: string; }) => {
                 </div>
                 : <>
                     <div style={{ marginBottom: 'var(--content-padding)' }}><Filters state={filterState} dispatch={filterDispatch}/></div>
-                    <Albums arr={arr} navigateArtist={a => [() => filterDispatch(['filter', 0, [a], true]), () => window.open(resolveParams(filterState.getParams(0, a)))]} ratings ts/>
+                    <Albums arr={arr} navigateArtist={a => m => m ? window.open(resolveParams(filterState.getParams(0, a))) : filterDispatch(['filter', 0, [a], true])} ratings ts/>
                 </>
         }
     </>;
