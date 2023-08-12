@@ -13,7 +13,7 @@ export const updateParams = (arr: string[][]) => {
     if (window.location.pathname + window.location.search !== path) window.history.pushState('', '', path);
 };
 
-export const onClick = (left: () => any, middle: () => any = left) => {
+export const onClick = (f: (mid: boolean) => any) => {
     let isTarget = false;
     return {
         onMouseDown: (e: MouseEvent) => {
@@ -22,7 +22,7 @@ export const onClick = (left: () => any, middle: () => any = left) => {
         },
         onMouseOut: () => isTarget = false,
         onMouseUp: (e: MouseEvent) => {
-            if (isTarget) [left, middle][e.button]?.();
+            if (isTarget && [0, 1].includes(e.button)) f(e.button === 1);
             isTarget = false;
         },
     };

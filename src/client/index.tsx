@@ -35,7 +35,7 @@ const App = () => {
         window.history.pushState('', '', resolvePath(arr, q));
         setPath(arr);
     };
-    const navigateOnClick = (arr: string[], q?: string[][]) => onClick(() => navigate(arr, q), () => window.open(resolvePath(arr, q)));
+    const navigateOnClick = (arr: string[], q?: string[][]) => onClick(m => m ? window.open(resolvePath(arr, q)) : navigate(arr, q));
     const [user, setUser] = useState<{
         loggedIn: boolean;
         auth?: Auth;
@@ -59,6 +59,7 @@ const App = () => {
             setPopup(false);
         });
     };
+    const getSearchPath = () => ['search', search.current!.value];
     useEffect(() => {
         window.onpopstate = () => setPath(getPath());
         try {
@@ -119,8 +120,8 @@ const App = () => {
                     <div></div>
                 </div>
                 <div className='searchContainer'>
-                    <input ref={search} {...enterKeydown(() => navigate(['search', search.current!.value]))}/>
-                    <button {...onClick(() => navigate(['search', search.current!.value]), () => window.open('/search/' + search.current!.value))}>Search</button>
+                    <input ref={search} {...enterKeydown(() => navigate(getSearchPath()))}/>
+                    <button {...onClick(m => m ? window.open(resolvePath(getSearchPath())) : navigate(getSearchPath()))}>Search</button>
                 </div>
             </div>
             <div className='body'>

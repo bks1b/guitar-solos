@@ -103,6 +103,12 @@ export default Router()
         await db.editUser(getHeader(req), { $set: { ratings: u.ratings.filter(x => x.id !== req.body.id) } });
     }, true))
     .get('/discover', handler((_, u) => db.discover(u), true))
+    .get('/random/:type', handler(async req => {
+        if (!['album', 'song', 'solo'].includes(req.params.type)) throw 'Type expected to be album, song or solo.';
+        const arr = await (await db.db).collection<Solo>(req.params.type + 's').find().toArray();
+        const random = arr[Math.floor(Math.random() * arr.length)];
+        return req.params.type === 'solo' ? { id: random.song, solo: random.id } : { id: random.id };
+    }))
     .post('/profile', handler(async req => {
         if (typeof req.body?.name !== 'string') throw 'Name expected.';
         return db.getProfile(req.body.name);
