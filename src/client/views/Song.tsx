@@ -44,7 +44,7 @@ export default ({ id }: { id: string; }) => {
     useEffect(() => {
         if (song) {
             document.title = `${song[0].name} - ${song[1].artist} | Guitar Solos`;
-            if (selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
+            if (!reload && selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
         }
     }, [song]);
     return song
@@ -89,7 +89,7 @@ export default ({ id }: { id: string; }) => {
                         <hr/>
                         {song[2].sort((a, b) => a[0].start - b[0].start).map(x => <div key={x[0].start}>
                             <div className='soloHeader'>
-                                <h1 className='center link' style={x[0].id === selected ? { textDecoration: 'underline' } : {}} {...navigateOnClick(['song', song[0].id], [['solo', x[0].id]])}>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h1>
+                                <h1 className='center'><a className='link' style={x[0].id === selected ? { textDecoration: 'underline' } : {}} {...navigateOnClick(['song', song[0].id], [['solo', x[0].id]])}>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</a></h1>
                                 <div><button onClick={() => setHidden({ ...hidden, [x[0].id]: !hidden[x[0].id] })}>{hidden[x[0].id] ? 'Show' : 'Hide'}</button></div>
                             </div>
                             <div style={{ display: hidden[x[0].id] ? 'none' : '' }}>
