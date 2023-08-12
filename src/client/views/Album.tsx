@@ -7,6 +7,7 @@ export default ({ id }: { id: string; }) => {
     const { request, navigate, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
     const [reload, setReload] = useState(0);
     const [album, setAlbum] = useState<[Album, Song[]]>();
+    const [error, setError] = useState(false);
     const name = useRef<HTMLInputElement>(null);
     const genres = useRef<HTMLInputElement>(null);
     const yt = useRef<HTMLInputElement>(null);
@@ -18,7 +19,7 @@ export default ({ id }: { id: string; }) => {
         youtube: yt.current!.value,
     }, d => navigate(['song', d.id]));
     useEffect(() => {
-        request<[Album, Song[]]>('/get/album?id=' + id, null, x => setAlbum(x));
+        request<[Album, Song[]]>('/get/album?id=' + id, null, x => setAlbum(x), () => setError(true));
     }, [reload]);
     useEffect(() => {
         if (album) document.title = `${album[0].name} - ${album[0].artist} | Guitar Solos`;
@@ -82,5 +83,7 @@ export default ({ id }: { id: string; }) => {
                     : <AuthText text='add songs to this album'/>
             }
         </>
-        : <></>;
+        : error
+            ? <h1>Album not found.</h1>
+            : <></>;
 };

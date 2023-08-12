@@ -13,6 +13,7 @@ export default ({ id }: { id: string; }) => {
     const selected = new URLSearchParams(window.location.search).get('solo');
     const [reload, setReload] = useState(0);
     const [song, setSong] = useState<[Song, Album, [Solo, Solos, number, number, number][]]>();
+    const [error, setError] = useState(false);
     const [hidden, setHidden] = useState<Record<string, boolean>>({});
     const startM = useRef<HTMLInputElement>(null);
     const startS = useRef<HTMLInputElement>(null);
@@ -39,7 +40,7 @@ export default ({ id }: { id: string; }) => {
     };
     const rate = (x: [Solo, ...any]) => () => request('/rate', { id: x[0].id, rating: +ratings[x[0].id].value }, () => setReload(reload + 1));
     useEffect(() => {
-        request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x));
+        request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x), () => setError(true));
     }, [reload]);
     useEffect(() => {
         if (song) {
@@ -159,5 +160,7 @@ export default ({ id }: { id: string; }) => {
                     : <AuthText text='add solos to this song'/>
             }
         </>
-        : <></>;
+        : error
+            ? <h1>Song not found.</h1>
+            : <></>;
 };
