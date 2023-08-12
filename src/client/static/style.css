@@ -295,3 +295,18 @@ textarea, input {
 .adminAlbum img {
     width: 30px;
 }
+
+.soloHeader {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.soloHeader h1 {
+    flex: 1;
+}
+
+.soloHeader div {
+    position: absolute;
+    right: 0;
+}

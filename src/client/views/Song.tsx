@@ -10,8 +10,10 @@ const TimeInput = ({ _ref, sec, f }: { _ref: RefObject<HTMLInputElement>; sec?: 
 
 export default ({ id }: { id: string; }) => {
     const { request, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
+    const selected = new URLSearchParams(window.location.search).get('solo');
     const [reload, setReload] = useState(0);
     const [song, setSong] = useState<[Song, Album, [Solo, Solos, number, number, number][]]>();
+    const [hidden, setHidden] = useState<Record<string, boolean>>({});
     const startM = useRef<HTMLInputElement>(null);
     const startS = useRef<HTMLInputElement>(null);
     const endM = useRef<HTMLInputElement>(null);
@@ -40,7 +42,10 @@ export default ({ id }: { id: string; }) => {
         request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x));
     }, [reload]);
     useEffect(() => {
-        if (song) document.title = `${song[0].name} - ${song[1].artist} | Guitar Solos`;
+        if (song) {
+            document.title = `${song[0].name} - ${song[1].artist} | Guitar Solos`;
+            if (selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
+        }
     }, [song]);
     return song
         ? <>
@@ -83,52 +88,57 @@ export default ({ id }: { id: string; }) => {
                     ? <>
                         <hr/>
                         {song[2].sort((a, b) => a[0].start - b[0].start).map(x => <div key={x[0].start}>
-                            <h1 className='center'>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h1>
-                            {
-                                x[0].guitarists.length
-                                    ? <>
-                                        <a>Guitarist{x[0].guitarists.length === 1 ? '' : 's'}: <LinkList arr={x[0].guitarists} query='guitarists'/></a>
-                                        <br/>
-                                    </>
-                                    : ''
-                            }
-                            <Ratings sum={x[2]} count={x[3]}/>
-                            {
-                                loggedIn
-                                    ? <>
-                                        <label>Own rating: <input type='number' min={0} max={10} defaultValue={x[4]} ref={e => ratings[x[0].id] = e!} {...enterKeydown(rate(x))} className='num'/>/10</label>
-                                        <button className='rate' onClick={rate(x)}>Rate</button>
-                                        {Number.isInteger(x[4]) ? <> <button onClick={() => request('/unrate', { id: x[0].id }, () => setReload(reload + 1))}>Unrate</button></> : ''}
-                                        {
-                                            admin
-                                                ? <div className='row'>
-                                                    <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)), x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
-                                                    <button onClick={() => {
-                                                        const d = JSON.parse(solos[x[0].id].value);
-                                                        request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1], guitarists: d[2] } }, () => setReload(reload + 1));
-                                                    }}>Edit</button>
-                                                    <button onClick={() => confirm('Are you sure?') && request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
-                                                    {
-                                                        x[0].unverified
-                                                            ? <button onClick={() => request('/admin/verify', { entry: ['solos', x[0].id] }, () => setReload(reload + 1))}>Verify</button>
-                                                            : ''
-                                                    }
-                                                </div>
-                                                : ''
-                                        }
-                                    </>
-                                    : <AuthText text='rate this solo'/>
-                            }
-                            <h3 className='center'>Audio</h3>
-                            <iframe src={`https://www.youtube.com/embed/${song[0].youtube}?start=${x[0].start}&end=${x[0].end + 2}`}/>
-                            {
-                                x[1].length
-                                    ? <>
-                                        <h3 className='center'>Similar solos</h3>
-                                        <Albums arr={x[1]} ts/>
-                                    </>
-                                    : ''
-                            }
+                            <div className='soloHeader'>
+                                <h1 className='center link' style={x[0].id === selected ? { textDecoration: 'underline' } : {}} {...navigateOnClick(['song', song[0].id], [['solo', x[0].id]])}>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h1>
+                                <div><button onClick={() => setHidden({ ...hidden, [x[0].id]: !hidden[x[0].id] })}>{hidden[x[0].id] ? 'Show' : 'Hide'}</button></div>
+                            </div>
+                            <div style={{ display: hidden[x[0].id] ? 'none' : '' }}>
+                                {
+                                    x[0].guitarists.length
+                                        ? <>
+                                            <a>Guitarist{x[0].guitarists.length === 1 ? '' : 's'}: <LinkList arr={x[0].guitarists} query='guitarists'/></a>
+                                            <br/>
+                                        </>
+                                        : ''
+                                }
+                                <Ratings sum={x[2]} count={x[3]}/>
+                                {
+                                    loggedIn
+                                        ? <>
+                                            <label>Own rating: <input type='number' min={0} max={10} defaultValue={x[4]} ref={e => ratings[x[0].id] = e!} {...enterKeydown(rate(x))} className='num'/>/10</label>
+                                            <button className='rate' onClick={rate(x)}>Rate</button>
+                                            {Number.isInteger(x[4]) ? <> <button onClick={() => request('/unrate', { id: x[0].id }, () => setReload(reload + 1))}>Unrate</button></> : ''}
+                                            {
+                                                admin
+                                                    ? <div className='row'>
+                                                        <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)), x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
+                                                        <button onClick={() => {
+                                                            const d = JSON.parse(solos[x[0].id].value);
+                                                            request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1], guitarists: d[2] } }, () => setReload(reload + 1));
+                                                        }}>Edit</button>
+                                                        <button onClick={() => confirm('Are you sure?') && request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
+                                                        {
+                                                            x[0].unverified
+                                                                ? <button onClick={() => request('/admin/verify', { entry: ['solos', x[0].id] }, () => setReload(reload + 1))}>Verify</button>
+                                                                : ''
+                                                        }
+                                                    </div>
+                                                    : ''
+                                            }
+                                        </>
+                                        : <AuthText text='rate this solo'/>
+                                }
+                                <h3 className='center'>Audio</h3>
+                                <iframe src={`https://www.youtube.com/embed/${song[0].youtube}?start=${x[0].start}&end=${x[0].end + 2}`}/>
+                                {
+                                    x[1].length
+                                        ? <>
+                                            <h3 className='center'>Similar solos</h3>
+                                            <Albums arr={x[1]} ts/>
+                                        </>
+                                        : ''
+                                }
+                            </div>
                         </div>)}
                     </>
                     : ''
