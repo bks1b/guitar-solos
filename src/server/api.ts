@@ -8,7 +8,7 @@ export const db = new Database();
 
 const checkInt = (n: number) => typeof n === 'number' && Number.isInteger(n) && n >= 0;
 const checkAuth = (arr: Auth) => {
-    if (!Array.isArray(arr) || ![2, 3].includes(arr.length) || arr.slice(0, 2).some(x => typeof x !== 'string')) throw 'Invalid authorization.';
+    if (!Array.isArray(arr) || [arr[0], arr[1]].some(x => typeof x !== 'string')) throw 'Invalid authorization.';
 };
 const getHeader = (req: Request) => {
     const arr: Auth = JSON.parse(req.headers.authorization!);
@@ -21,7 +21,7 @@ const getUser = async (auth: Auth) => {
     if (user?.password !== hash(auth[1])) throw 'Incorrect credentials.';
     return user;
 };
-const filterUser = async (p: Promise<User>) => ({ ...await p, password: undefined, ratings: undefined });
+const filterUser = async (p: Promise<User | null>) => ({ ...await p, password: undefined, ratings: undefined });
 
 const handler = (fn: (req: Request, u: User) => any, u?: boolean): RequestHandler => async (req, res) => {
     try {
@@ -43,7 +43,8 @@ export default Router()
     .post('/auth/edit', handler(async req => {
         const header = getHeader(req);
         checkAuth(req.body);
-        return filterUser(db.editUser(header, { $set: await db.getCredentials(req.body, req.body[0] !== header[0]) }));
+        await db.editUser(header, { $set: await db.getCredentials(req.body, req.body[0] !== header[0]) });
+        return filterUser(db.getUser(req.body[0]));
     }))
     .post('/add/album', handler((req, u) => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';

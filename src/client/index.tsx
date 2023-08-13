@@ -36,24 +36,19 @@ const App = () => {
         setPath(arr);
     };
     const navigateOnClick = (arr: string[], q?: string[][]) => onClick(m => m ? window.open(resolvePath(arr, q)) : navigate(arr, q));
-    const [user, setUser] = useState<{
-        loggedIn: boolean;
-        auth?: Auth;
-        name?: string;
-        public?: boolean;
-        admin?: boolean;
-    }>({ loggedIn: false });
+    const [user, setUser] = useState<{ loggedIn: boolean; auth?: Auth; } & { [k in Exclude<keyof User, 'password' | 'ratings'>]?: User[k]; }>({ loggedIn: false });
     const [path, setPath] = useState(getPath());
     const [sidebar, setSidebar] = useState(!isMobile);
     const [popup, setPopup] = useState<PopupState>(false);
     const [wait, setWait] = useState(!!localStorage.getItem('auth'));
     const username = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
+    const desc = useRef<HTMLInputElement>(null);
     const isPublic = useRef<HTMLInputElement>(null);
     const search = useRef<HTMLInputElement>(null);
     const submitPopup = () => {
-        const auth = [username.current!.value, password.current!.value, { public: isPublic.current?.checked }] as Auth;
-        request<User>('/auth/' + popup, auth, d => {
+        const auth = [username.current!.value, password.current!.value] as Auth;
+        request<User>('/auth/' + popup, [...auth, desc.current?.value, isPublic.current?.checked], d => {
             localStorage.setItem('auth', JSON.stringify(auth));
             setUser({ loggedIn: true, auth, ...d });
             setPopup(false);
@@ -64,7 +59,7 @@ const App = () => {
         window.onpopstate = () => setPath(getPath());
         try {
             const auth = JSON.parse(localStorage.getItem('auth')!);
-            if (auth) request<[string, boolean]>('/auth/login', auth, d => setUser({ loggedIn: true, auth, ...d }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
+            if (auth) request<User>('/auth/login', auth, d => setUser({ loggedIn: true, auth, ...d }), () => localStorage.removeItem('auth')).finally(() => setWait(false));
         } catch {
             setWait(false);
         }
@@ -98,12 +93,14 @@ const App = () => {
                         <div className='popup'>
                             <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''} {...enterKeydown(submitPopup)}/></label>
                             <br/>
-                            <label>Password: <input type='password' ref={password} {...enterKeydown(submitPopup)}/></label>
+                            <label>Password: <input type='password' ref={password} defaultValue={user.loggedIn ? user.auth![1] : ''} {...enterKeydown(submitPopup)}/></label>
                             <br/>
                             {
                                 popup === 'login'
                                     ? ''
                                     : <>
+                                        <label>Profile description <a className='label'>(optional)</a>: <input ref={desc} defaultValue={user.loggedIn ? user.description : ''} {...enterKeydown(submitPopup)}/></label>
+                                        <br/>
                                         <label><input type='checkbox' ref={isPublic} defaultChecked={user.loggedIn ? user.public : true}/> Profile can show up in search results</label>
                                         <br/>
                                     </>
