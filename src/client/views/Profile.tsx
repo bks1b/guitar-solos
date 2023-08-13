@@ -22,32 +22,35 @@ export default ({ name }: { name: string; }) => {
     });
     if (error) return <h1>User not found.</h1>;
     if (!user) return <></>;
-    if (!user[1].length) return <>
-        <h1 className='center'>{user[0]}</h1>
-        <h2>This user hasn't rated any solos.</h2>
-    </>;
-    const arr = filterState.filters.apply(user[1]);
-    if (filterState.sort.sort) arr.sort((a, b) => [b[3] - a[3], b[0].end - b[0].start - a[0].end + a[0].start, b[2].year - a[2].year][filterState.sort.sort - 1]);
+    const arr = filterState.filters.apply(user[2]);
+    if (filterState.sort.sort) arr.sort((a, b) => (f => f(b) - f(a))((x: typeof a) => [x[3], x[0].end - x[0].start, x[2].year][filterState.sort.sort - 1]));
     if (+!!filterState.sort.sort ^ filterState.sort.order) arr.reverse();
     return <>
         <h1 className='center'>{user[0]}</h1>
-        <button onClick={() => setView(!view)}>View {view ? 'ratings' : 'stats'}</button>
+        <div className='center'>{user[1]}</div>
         {
-            view
-                ? <div>
-                    <a>{user[1].length} solos rated</a>
-                    <RatingStats data={user[2]} state={sortState} dispatch={sortDispatch} path={['profile', user[0]]} profile/>
-                </div>
-                : <>
-                    <div style={{ marginBottom: 'var(--content-padding)' }}><Filters state={filterState} dispatch={filterDispatch}/></div>
+            user[2].length
+                ? <>
+                    <button onClick={() => setView(!view)}>View {view ? 'ratings' : 'stats'}</button>
                     {
-                        arr.length
-                            ? <Albums arr={arr} navigateArtist={a => m => m ? window.open(resolveParams(filterState.getParams(0, a))) : filterDispatch(['filter', 0, [a], true])} ratings ts/>
-                            : <h2>No matching solos found.</h2>
+                        view
+                            ? <div>
+                                <a>{user[2].length} solos rated</a>
+                                <RatingStats data={user[3]} state={sortState} dispatch={sortDispatch} path={['profile', user[0]]} profile/>
+                            </div>
+                            : <>
+                                <div style={{ marginBottom: 'var(--content-padding)' }}><Filters state={filterState} dispatch={filterDispatch}/></div>
+                                {
+                                    arr.length
+                                        ? <Albums arr={arr} navigateArtist={a => m => m ? window.open(resolveParams(filterState.getParams(0, a))) : filterDispatch(['filter', 0, [a], true])} ratings ts/>
+                                        : <h2>No matching solos found.</h2>
+                                }
+                            </>
                     }
                 </>
+                : <h2>This user hasn't rated any solos.</h2>
         }
     </>;
 };
 
-type Data = [string, Solos, RatingStatsType];
+type Data = [string, string, Solos, RatingStatsType];

@@ -1,6 +1,6 @@
 import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
 import { compareTwoStrings } from 'string-similarity';
-import { Album, Auth, Data, Rating, Solo, Song, User } from '../types';
+import { Album, Auth, Data, ExtendedAuth, Rating, Solo, Song, User } from '../types';
 import { getScore, hash } from './util';
 
 export default class {
@@ -33,11 +33,20 @@ export default class {
         return (await this.db).collection<User>('users').find({ public: true }).toArray();
     }
 
-    async getCredentials(auth: Auth, checkTaken = true) {
+    async getCredentials(auth: ExtendedAuth, checkTaken = true) {
         if ([auth[0], auth[1]].some(x => x.trim().length < 3)) throw 'Usernames and passwords must be at least 3 characters long.';
+        if ([auth[0], auth[1], auth[2]].some(x => x.trim().length > 100)) throw 'Usernames, passwords and descriptions must be at most 100 characters long.';
         if (!/^[a-z0-9_]+$/i.test(auth[0])) throw 'Usernames must only contain English letters, digits and underscores (_).';
+        if (typeof auth[2] !== 'string') throw 'Description expected.';
+        if (typeof auth[3] !== 'boolean') throw 'Profile publicness expected.';
         if (checkTaken && await this.getUser(auth[0])) throw 'Username taken.';
-        return { ...auth[2]! || {}, name: auth[0], lowerName: auth[0].toLowerCase(), password: hash(auth[1]) };
+        return {
+            name: auth[0].trim(),
+            lowerName: auth[0].trim().toLowerCase(),
+            password: hash(auth[1]),
+            description: auth[2].trim(),
+            public: auth[3],
+        };
     }
 
     async getBackup() {
@@ -48,15 +57,14 @@ export default class {
         return (await this.db).collection<User>('users').findOne({ lowerName: name.toLowerCase() });
     }
 
-    async addUser(auth: Auth) {
+    async addUser(auth: ExtendedAuth) {
         const obj = { ...await this.getCredentials(auth), ratings: [] };
         await (await this.db).collection<User>('users').insertOne(obj);
         return obj;
     }
 
     async editUser(auth: Auth, filter: UpdateFilter<User>) {
-        await (await this.db).collection<User>('users').updateOne({ lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
-        return (await this.getUser(auth[0]))!;
+        return (await this.db).collection<User>('users').updateOne({ lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
     }
 
     async addAlbum(data: Omit<Album, 'id' | 'lowerName' | 'lowerArtist'>, admin?: boolean) {
@@ -125,7 +133,7 @@ export default class {
         const user = await this.getUser(name);
         if (!user) throw 'User not found.';
         const data = await this.getCollections(true);
-        return [user.name, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating]), this.getRatingStats(user.ratings, data)];
+        return [user.name, user.description, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating]), this.getRatingStats(user.ratings, data)];
     }
 
     async discover(user: User) {
