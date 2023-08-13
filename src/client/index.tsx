@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Auth, User } from '../types';
-import { enterKeydown, isMobile, MainContext, onClick, PopupState, RequestFn, resolvePath } from './util';
+import { User } from '../types';
+import { enterKeydown, isMobile, AuthState, MainContext, onClick, RequestFn, resolvePath } from './util';
 import AddAlbum from './views/AddAlbum';
 import Album from './views/Album';
 import Charts from './views/Charts';
@@ -10,12 +10,12 @@ import Profile from './views/Profile';
 import Search from './views/Search';
 import Song from './views/Song';
 import Stats from './views/Stats';
-import Rules from './views/Rules';
 import Admin from './views/Admin';
-import Help from './views/Help';
+import Guide from './views/Guide';
+import Auth from './components/Auth';
 
 let id = Date.now();
-let lastStateStr = '';
+let lastSidebar = !isMobile;
 
 const App = () => {
     const request: RequestFn = (str, body, cb, err) => fetch('/api' + str, {
@@ -36,24 +36,11 @@ const App = () => {
         setPath(arr);
     };
     const navigateOnClick = (arr: string[], q?: string[][]) => onClick(m => m ? window.open(resolvePath(arr, q)) : navigate(arr, q));
-    const [user, setUser] = useState<{ loggedIn: boolean; auth?: Auth; } & { [k in Exclude<keyof User, 'password' | 'ratings'>]?: User[k]; }>({ loggedIn: false });
+    const [user, setUser] = useState<AuthState>({ loggedIn: false });
     const [path, setPath] = useState(getPath());
-    const [sidebar, setSidebar] = useState(!isMobile);
-    const [popup, setPopup] = useState<PopupState>(false);
+    const [sidebar, setSidebar] = useState(lastSidebar);
     const [wait, setWait] = useState(!!localStorage.getItem('auth'));
-    const username = useRef<HTMLInputElement>(null);
-    const password = useRef<HTMLInputElement>(null);
-    const desc = useRef<HTMLInputElement>(null);
-    const isPublic = useRef<HTMLInputElement>(null);
     const search = useRef<HTMLInputElement>(null);
-    const submitPopup = () => {
-        const auth = [username.current!.value, password.current!.value] as Auth;
-        request<User>('/auth/' + popup, [...auth, desc.current?.value, isPublic.current?.checked], d => {
-            localStorage.setItem('auth', JSON.stringify(auth));
-            setUser({ loggedIn: true, auth, ...d });
-            setPopup(false);
-        });
-    };
     const getSearchPath = () => ['search', search.current!.value];
     useEffect(() => {
         window.onpopstate = () => setPath(getPath());
@@ -79,37 +66,11 @@ const App = () => {
             subtree: true,
         });
     }, []);
-    const stateStr = JSON.stringify([sidebar, popup]);
-    if (stateStr === lastStateStr) id = Date.now();
-    lastStateStr = stateStr;
+    if (sidebar === lastSidebar) id = Date.now();
+    lastSidebar = sidebar;
     return wait
         ? <></>
-        : <MainContext.Provider value={{ request, navigate, navigateOnClick, setPopup, loggedIn: user.loggedIn, admin: user.admin! }}>
-            {
-                popup
-                    ? <div className='popupContainer' onClick={e => {
-                        if ((e.target as HTMLElement).className === 'popupContainer') setPopup(false);
-                    }}>
-                        <div className='popup'>
-                            <label>Username: <input ref={username} defaultValue={user.loggedIn ? user.name : ''} {...enterKeydown(submitPopup)}/></label>
-                            <br/>
-                            <label>Password: <input type='password' ref={password} defaultValue={user.loggedIn ? user.auth![1] : ''} {...enterKeydown(submitPopup)}/></label>
-                            <br/>
-                            {
-                                popup === 'login'
-                                    ? ''
-                                    : <>
-                                        <label>Profile description <a className='label'>(optional)</a>: <input ref={desc} defaultValue={user.loggedIn ? user.description : ''} {...enterKeydown(submitPopup)}/></label>
-                                        <br/>
-                                        <label><input type='checkbox' ref={isPublic} defaultChecked={user.loggedIn ? user.public : true}/> Profile can show up in search results</label>
-                                        <br/>
-                                    </>
-                            }
-                            <button onClick={submitPopup}>{popup === 'edit' ? 'Save' : popup === 'login' ? 'Log in' : 'Sign up'}</button>
-                        </div>
-                    </div>
-                    : ''
-            }
+        : <MainContext.Provider value={{ request, navigate, navigateOnClick, user, setUser, loggedIn: user.loggedIn, admin: user.admin! }}>
             <div className='navbar'>
                 <div className='toggleSidebar' onClick={() => setSidebar(!sidebar)}>
                     <div></div>
@@ -133,23 +94,19 @@ const App = () => {
                                     ['Discover', ['discover']],
                                     ['Add album', ['add', 'album']],
                                 ] : [],
-                                ['Help', ['help']],
-                                ['Rules', ['rules']],
+                                ['Guide and rules', ['guide']],
                                 ...user.admin ? [['Admin', ['admin']]] : [],
+                                ...user.loggedIn
+                                    ? [['Account settings', ['settings']]]
+                                    : [['Log in', ['login']], ['Sign up', ['signup']]],
                             ] as [string, string[]][]).map((x, i) => <div key={i} {...navigateOnClick(x[1], [])} className={path === x[1] ? 'selected' : ''}>{x[0]}</div>)}
                             {
                                 user.loggedIn
-                                    ? <>
-                                        <div onClick={() => setPopup('edit')}>Account settings</div>
-                                        <div onClick={() => {
-                                            localStorage.removeItem('auth');
-                                            setUser({ loggedIn: false });
-                                        }}>Log out</div>
-                                    </>
-                                    : <>
-                                        <div onClick={() => setPopup('login')}>Log in</div>
-                                        <div onClick={() => setPopup('signup')}>Sign up</div>
-                                    </>
+                                    ? <div onClick={() => {
+                                        localStorage.removeItem('auth');
+                                        setUser({ loggedIn: false });
+                                    }}>Log out</div>
+                                    : ''
                             }
                         </div>
                         : ''
@@ -172,10 +129,10 @@ const App = () => {
                                 ? <Discover/>
                                 : path[0] === 'stats'
                                     ? <Stats/>
-                                    : path[0] === 'help'
-                                        ? <Help/>
-                                        : path[0] === 'rules'
-                                            ? <Rules/>
+                                    : path[0] === 'guide'
+                                        ? <Guide/>
+                                        : (user.loggedIn ? ['settings'] : ['login', 'signup']).includes(path[0])
+                                            ? <Auth type={path[0]}/>
                                             : path[0] === 'admin' && user.admin
                                                 ? <Admin/>
                                                 : undefined

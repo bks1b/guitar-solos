@@ -40,7 +40,7 @@ export default Router()
         checkAuth(req.body);
         return filterUser(db.addUser(req.body));
     }))
-    .post('/auth/edit', handler(async req => {
+    .post('/auth/settings', handler(async req => {
         const header = getHeader(req);
         checkAuth(req.body);
         await db.editUser(header, { $set: await db.getCredentials(req.body, req.body[0] !== header[0]) });
