@@ -23,7 +23,7 @@ express()
         const [albums, songs] = await db.getCollections();
         const users = await db.getPublicUsers();
         res.setHeader('content-type', 'text/plain; charset=UTF-8');
-        res.send(['', 'add/album', 'rules', 'stats', 'discover', ...albums.map(x => 'album/' + x.id), ...songs.map(x => 'song/' + x.id), ...users.map(x => 'profile/' + x.lowerName)].map(x => BASE_URL + x).join('\n'));
+        res.send(['', 'add/album', 'guide', 'login', 'signup', 'settings', 'stats', 'discover', ...albums.map(x => 'album/' + x.id), ...songs.map(x => 'song/' + x.id), ...users.map(x => 'profile/' + x.lowerName)].map(x => BASE_URL + x).join('\n'));
     })
     .get('*', async (req, res) => {
         let title = 'Page Not Found';
@@ -61,17 +61,21 @@ express()
                     ? ['Search', '']
                     : [title, '']
             : path.length === 1
-                ? path[0] === 'help'
-                    ? ['Help', '']
-                    : path[0] === 'rules'
-                        ? ['Rules', '']
-                        : path[0] === 'stats'
-                            ? ['Stats', 'View statistics, and the highest rated albums and artists.']
-                            : path[0] === 'discover'
-                                ? ['Discover', '']
-                                : !path[0]
-                                    ? ['Charts', 'View the highest rated guitar solos.']
-                                    : [title, '']
+                ? path[0] === 'guide'
+                    ? ['Guide and rules', '']
+                    : path[0] === 'stats'
+                        ? ['Stats', 'View statistics, and the highest rated albums and artists.']
+                        : path[0] === 'discover'
+                            ? ['Discover', '']
+                            : path[0] === 'settings'
+                                ? ['Account settings', '']
+                                : path[0] === 'login'
+                                    ? ['Log in', '']
+                                    : path[0] === 'signup'
+                                        ? ['Sign up', '']
+                                        : !path[0]
+                                            ? ['Charts', 'View the highest rated guitar solos.']
+                                            : [title, '']
                 : [title, ''];
         desc = `${escapeQuotes(desc)}${desc ? ' ' : ''}Discover and rate guitar solos.`;
         res.send(html.replace('<!-- meta -->', () => `

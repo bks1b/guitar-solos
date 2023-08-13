@@ -90,7 +90,7 @@ export default ({ id }: { id: string; }) => {
                         <hr/>
                         {song[2].sort((a, b) => a[0].start - b[0].start).map(x => <div key={x[0].start}>
                             <div className='soloHeader'>
-                                <h1 className='center'><a className='link' style={x[0].id === selected ? { textDecoration: 'underline' } : {}} {...navigateOnClick(['song', song[0].id], [['solo', x[0].id]])}>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</a></h1>
+                                <h1 className='center'><a className={`link${x[0].id === selected ? ' underline' : ''}`} {...navigateOnClick(['song', song[0].id], [['solo', x[0].id]])}>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</a></h1>
                                 <div><button onClick={() => setHidden({ ...hidden, [x[0].id]: !hidden[x[0].id] })}>{hidden[x[0].id] ? 'Show' : 'Hide'}</button></div>
                             </div>
                             <div style={{ display: hidden[x[0].id] ? 'none' : '' }}>
