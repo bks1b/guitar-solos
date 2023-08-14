@@ -96,7 +96,10 @@ export default class {
     async getAlbum(id: string) {
         const album = await (await this.db).collection<Album>('albums').findOne({ id });
         if (!album) throw 'Album not found.';
-        return [album, await (await this.db).collection<Song>('songs').find({ album: id }).toArray()];
+        const songs = await (await this.db).collection<Song>('songs').find({ album: id }).toArray();
+        const solos = await (await this.db).collection<Solo>('solos').find({ song: { $in: songs.map(x => x.id) } }).toArray();
+        const ratings = (await (await this.db).collection<User>('users').find().toArray()).flatMap(u => u.ratings.filter(x => solos.some(s => s.id === x.id)));
+        return [album, songs, solos.length, ratings.reduce((a, b) => a + b.rating, 0) / ratings.length, ratings.length];
     }
 
     async getSong(id: string, user?: User) {

@@ -1,12 +1,12 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Album, Song } from '../../types';
-import { MainContext, enterKeydown } from '../util';
+import { MainContext, enterKeydown, toFixed } from '../util';
 import AuthText from '../components/AuthText';
 
 export default ({ id }: { id: string; }) => {
     const { request, navigate, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
     const [reload, setReload] = useState(0);
-    const [album, setAlbum] = useState<[Album, Song[]]>();
+    const [album, setAlbum] = useState<Data>();
     const [error, setError] = useState(false);
     const name = useRef<HTMLInputElement>(null);
     const genres = useRef<HTMLInputElement>(null);
@@ -19,7 +19,7 @@ export default ({ id }: { id: string; }) => {
         youtube: yt.current!.value,
     }, d => navigate(['song', d.id]));
     useEffect(() => {
-        request<[Album, Song[]]>('/get/album?id=' + id, null, x => setAlbum(x), () => setError(true));
+        request<Data>('/get/album?id=' + id, null, x => setAlbum(x), () => setError(true));
     }, [reload]);
     useEffect(() => {
         if (album) document.title = `${album[0].name} - ${album[0].artist} | Guitar Solos`;
@@ -33,11 +33,19 @@ export default ({ id }: { id: string; }) => {
                     <h2><a className='label'>by</a> <a className='link' {...navigateOnClick([], [['artists', album[0].artist.toLowerCase()]])}>{album[0].artist}</a></h2>
                 </div>
             </div>
-            <a>Released in: <a className='link' {...navigateOnClick([], [['years', album[0].year + '']])}>{album[0].year}</a></a>
+            <div>Released in: <a className='link' {...navigateOnClick([], [['years', album[0].year + '']])}>{album[0].year}</a></div>
+            {
+                album[1].length
+                    ? <div>
+                        <a>{album[1].length} songs, {album[2]} solos</a>
+                        <br/>
+                        <a>{toFixed(album[3])}/10 average rating, {album[4]} total ratings</a>
+                    </div>
+                    : ''
+            }
             {
                 admin
                     ? <>
-                        <br/>
                         <textarea defaultValue={JSON.stringify({
                             name: album[0].name,
                             artist: album[0].artist,
@@ -87,3 +95,5 @@ export default ({ id }: { id: string; }) => {
             ? <h1>Album not found.</h1>
             : <></>;
 };
+
+type Data = [Album, Song[], number, number, number];
