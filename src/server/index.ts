@@ -5,7 +5,7 @@ import { config } from 'dotenv';
 
 config();
 
-import { Album, Song, User } from '../types';
+import { Album, Song, User } from '../util';
 import api, { db } from './api';
 import { escapeQuotes } from './util';
 

@@ -1,8 +1,8 @@
 import { RefObject, useContext, useEffect, useRef, useState } from 'react';
-import { Album, Solo, Song } from '../../types';
+import { Album, Solo, Solos, Song } from '../../util';
 import Albums from '../components/Albums';
 import Ratings from '../components/Ratings';
-import { enterKeydown, getSecs, getTimestamp, MainContext, Solos } from '../util';
+import { enterKeydown, getSecs, getTimestamp, MainContext } from '../util';
 import LinkList from '../components/LinkList';
 import AuthText from '../components/AuthText';
 

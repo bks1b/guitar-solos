@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { MainContext , getTimestamp } from '../util';
-import { Album, Solo, Song } from '../../types';
+import { Album, Solo, Song } from '../../util';
 import AdminSongs from '../components/AdminSongs';
 
 export default () => {

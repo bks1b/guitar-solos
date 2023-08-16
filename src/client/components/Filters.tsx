@@ -1,76 +1,68 @@
 import { Dispatch, Fragment, useReducer } from 'react';
-import { Solos, orderBy } from '../util';
+import { Filters, loadFilters } from '../../util';
 
-export const getFilterReducer = (arr: string[]) => {
+const orderBy = ['ascending', 'descending'];
+
+export const getSortReducer = (arr: string[]) => {
     const params = new URLSearchParams(window.location.search);
-    return useReducer((state: State, action: Action) => {
-        if (action[0] === 'filter') {
-            state.filters.arr[action[1]][3] = action[2];
-            if (action[3]) state.filters.forced++;
-        } else if (action[0] === 'filterMode') state.filters.arr[action[1]][4] = action[2];
-        else state.sort[action[1]] = action[2];
+    return useReducer((state: SortState, action: SortAction) => {
+        state[action[0]] = action[1];
         return { ...state };
     }, {
-        sort: {
-            arr,
-            sort: Math.max(arr.indexOf(params.get('sort')!), 0),
-            order: +(params.get('order') !== orderBy[0]),
-        },
-        filters: {
-            arr: ([
-                ['artists', x => [x[2].artist], false],
-                ['guitarists', x => x[0].guitarists, true],
-                ['genres', x => x[1].genres, true],
-                ['years', x => [x[2].year + ''], false],
-            ] as [string, (x: Solos[number]) => string[], boolean][]).map(x => [...x, params.get(x[0])?.toLowerCase().split(';') || [], params.get(x[0] + '_mode') === 'all'] as Filter),
-            forced: 0,
-            apply(d: Solos) {
-                return d.filter(x => this.arr.every(y => {
-                    const arr = y[1](x as any).map(s => s.toLowerCase());
-                    const [include, exclude] = y[3].reduce((a, b) => b.startsWith('%') ? [a[0], [...a[1], b.slice(1)]] : [[...a[0], b], a[1]], [[], []] as string[][]);
-                    return (!include.length || include[y[4] ? 'every' : 'some'](s => arr.includes(s))) && exclude.every(s => !arr.includes(s));
-                }));
-            },
-        },
-        getParams(i?: number, s?: string) {
+        arr,
+        sort: Math.max(arr.indexOf(params.get('sort')!), 0),
+        order: +(params.get('order') !== orderBy[0]),
+        getParams() {
             return [
-                ...this.sort.sort ? [['sort', arr[this.sort.sort]]] : [],
-                ...this.sort.order ? [] : [['order', orderBy[0]]],
-                ...this.filters.arr.flatMap((x: Filter, j: number) => {
-                    const arr = [...x[3], ...i === j && !x[3].includes(s!) ? [s] : []];
-                    return arr.length ? [[x[0], arr.join(';')], ...x[2] && x[4] ? [[x[0] + '_mode', 'all']] : []] : [];
-                }),
+                ...this.sort ? [['sort', arr[this.sort]]] : [],
+                ...this.order ? [] : [['order', orderBy[0]]],
             ];
         },
     });
 };
+export const getFilterReducer = () => {
+    const params = new URLSearchParams(window.location.search);
+    return useReducer((state: FilterState, action: FilterAction) => {
+        if (action[0] === 'filter') {
+            state.arr[action[1]][3] = action[2];
+            if (action[3]) state.forced++;
+        } else state.arr[action[1]][4] = action[2];
+        return { ...state };
+    }, {
+        arr: loadFilters(Object.fromEntries([...params])),
+        forced: 0,
+        getParams(i?: number, s?: string) {
+            return (this.arr as Filters).flatMap((x, j) => {
+                const arr = [...x[3], ...i === j && !x[3].includes(s!) ? [s] : []];
+                return arr.length ? [[x[0], arr.join(';')], ...x[2] && x[4] ? [[x[0] + '_mode', 'all']] : []] : [];
+            });
+        },
+    });
+};
 
-export default ({ state, dispatch }: { state: State; dispatch: Dispatch<Action>; }) => <div>
+export const Sort = ({ state, dispatch }: { state: SortState; dispatch: Dispatch<SortAction>; }) => <div>
     <a>Sort by: </a>
-    {([['sort', state.sort.arr], ['order', orderBy]] as ['sort' | 'order', string[]][]).map((x, i) => <Fragment key={i}>
+    {([['sort', state.arr], ['order', orderBy]] as ['sort' | 'order', string[]][]).map((x, i) => <Fragment key={i}>
         {i ? <a> </a> : ''}
-        <select defaultValue={state.sort[x[0]]} onChange={e => dispatch(['sort', x[0], e.target.selectedIndex])}>{x[1].map((x, i) => <option key={i} value={i}>{x}</option>)}</select>
-    </Fragment>)}
-    <br/>
-    {state.filters.arr.map((x, i) => <Fragment key={i}>
-        {i ? <br/> : ''}
-        <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[3].join('; ')} key={state.filters.forced} onInput={e => dispatch(['filter', i, (e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x)])}/></label>
-        {' '}{x[2] ? <select defaultValue={x[4] ? 'all' : 'any'} onChange={e => dispatch(['filterMode', i, !!e.target.selectedIndex])}><option>any</option><option>all</option></select> : ''}
+        <select defaultValue={state[x[0]]} onChange={e => dispatch([x[0], e.target.selectedIndex])}>{x[1].map((x, i) => <option key={i} value={i}>{x}</option>)}</select>
     </Fragment>)}
 </div>;
+export const Filter = ({ state, dispatch }: { state: FilterState; dispatch: Dispatch<FilterAction>; }) => <div>{state.arr.map((x, i) => <Fragment key={i}>
+    {i ? <br/> : ''}
+    <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[3].join('; ')} key={state.forced} onInput={e => dispatch(['filter', i, (e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x)])}/></label>
+    {' '}{x[2] ? <select defaultValue={x[4] ? 'all' : 'any'} onChange={e => dispatch(['filterMode', i, !!e.target.selectedIndex])}><option>any</option><option>all</option></select> : ''}
+</Fragment>)}</div>;
 
-type Filter = [string, (x: Solos[number]) => string[], boolean, string[], boolean];
-type State = {
-    sort: {
-        arr: string[];
-        sort: number;
-        order: number;
-    };
-    filters: {
-        arr: Filter[];
-        forced: number;
-        apply(d: Solos): Solos;
-    };
+type SortState = {
+    arr: string[];
+    sort: number;
+    order: number;
+    getParams(): string[][];
+};
+export type FilterState = {
+    arr: Filters;
+    forced: number;
     getParams(i?: number, s?: string): string[][];
 };
-type Action = ['sort', 'sort' | 'order', number] | ['filter', number, string[], boolean?] | ['filterMode', number, boolean];
+type SortAction = ['sort' | 'order', number];
+type FilterAction = ['filter', number, string[], boolean?] | ['filterMode', number, boolean];

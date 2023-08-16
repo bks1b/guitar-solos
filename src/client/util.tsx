@@ -1,5 +1,5 @@
 import { createContext, KeyboardEvent, MouseEvent, RefObject } from 'react';
-import { Album, Auth, Solo, Song, User } from '../types';
+import { Album, Auth, User } from '../util';
 
 export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export const orderBy = ['ascending', 'descending'];
@@ -51,8 +51,9 @@ type Ctx = {
 };
 export type RequestFn = <T>(str: string, body: Record<string, any> | null, cb: (x: T) => any, err?: (x: string) => any) => Promise<any>;
 export type AuthState = { loggedIn: boolean; auth?: Auth; } & { [k in Exclude<keyof User, 'password' | 'ratings'>]?: User[k]; };
-export type Solos = [Solo, Song, Album, number, number][];
-export type RatingStatsType = {
+export type StatsType = {
+    total: number[];
+    averageDuration: number;
     ratings: number[][];
     albums: [Album, number, number, number, number, number][];
 }

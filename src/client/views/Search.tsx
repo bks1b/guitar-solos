@@ -1,7 +1,8 @@
 import { Fragment, useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
-import { MainContext, Solos } from '../util';
+import { MainContext } from '../util';
 import List from '../components/List';
+import { Solos } from '../../util';
 
 const STEP = 20;
 const LIST_STEP = 10;

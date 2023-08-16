@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
-import { MainContext, Solos, onClick, resolvePath } from '../util';
+import { MainContext, onClick, resolvePath } from '../util';
+import { Solos } from '../../util';
 
 export default () => {
     const { request, navigate } = useContext(MainContext)!;

@@ -1,6 +1,6 @@
 import { Router, Request, RequestHandler } from 'express';
 import fetch from 'node-fetch';
-import { Auth, Solo, User } from '../types';
+import { Auth, Solo, User } from '../util';
 import Database from './Database';
 import { hash } from './util';
 
@@ -114,12 +114,16 @@ export default Router()
         if (typeof req.body?.name !== 'string') throw 'Name expected.';
         return db.getProfile(req.body.name);
     }))
+    .post('/profile/stats', handler(async req => {
+        if (typeof req.body?.name !== 'string') throw 'Name expected.';
+        return db.getProfileStats(req.body.name, req.query);
+    }))
     .post('/search', handler(req => {
         if (!req.body?.str || typeof req.body?.str !== 'string') throw 'Query expected.';
         return db.search(req.body.str);
     }))
     .get('/charts', handler(() => db.getCharts()))
-    .get('/stats', handler(() => db.getStats()))
+    .get('/stats', handler(req => db.getTotalStats(req.query)))
     .post('/genius', handler(req => fetch('https://genius.com/api/search/album?page=1&q=' + req.body.query)
         .then(d => d.json())
         .then(d => d.response.sections[0].hits.map((x: any) => [

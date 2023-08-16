@@ -1,5 +1,6 @@
 import { useContext } from 'react';
-import { getTimestamp, MainContext, onClick, Solos } from '../util';
+import { getTimestamp, MainContext, onClick } from '../util';
+import { Solos } from '../../util';
 
 export default ({ arr, navigateArtist, ratings, album, ts }: { arr: Solos; navigateArtist?: (a: string) => (m: boolean) => any; ratings?: boolean; album?: boolean; ts?: boolean; }) => {
     const { navigateOnClick } = useContext(MainContext)!;

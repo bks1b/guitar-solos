@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { User } from '../types';
+import { User } from '../util';
 import { enterKeydown, isMobile, AuthState, MainContext, onClick, RequestFn, resolvePath } from './util';
 import AddAlbum from './views/AddAlbum';
 import Album from './views/Album';
@@ -9,7 +9,7 @@ import Discover from './views/Discover';
 import Profile from './views/Profile';
 import Search from './views/Search';
 import Song from './views/Song';
-import Stats from './views/Stats';
+import Info from './views/Info';
 import Admin from './views/Admin';
 import Guide from './views/Guide';
 import Auth from './components/Auth';
@@ -128,7 +128,7 @@ const App = () => {
                             ? path[0] === 'discover' && user.loggedIn
                                 ? <Discover/>
                                 : path[0] === 'stats'
-                                    ? <Stats/>
+                                    ? <Info/>
                                     : path[0] === 'guide'
                                         ? <Guide/>
                                         : (user.loggedIn ? ['settings'] : ['login', 'signup']).includes(path[0])
