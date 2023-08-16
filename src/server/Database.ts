@@ -1,6 +1,6 @@
 import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
 import { compareTwoStrings } from 'string-similarity';
-import { Album, Auth, Data, ExtendedAuth, Rating, Solo, Song, User } from '../types';
+import { Album, Auth, ExtendedAuth, Rating, Solo, Solos, Song, User, applyFilters, loadFilters } from '../util';
 import { getScore, hash } from './util';
 
 export default class {
@@ -136,7 +136,14 @@ export default class {
         const user = await this.getUser(name);
         if (!user) throw 'User not found.';
         const data = await this.getCollections(true);
-        return [user.name, user.description, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating]), this.getRatingStats(user.ratings, data)];
+        return [user.name, user.description, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating])];
+    }
+
+    async getProfileStats(name: string, params: Record<string, any>) {
+        const user = await this.getUser(name);
+        if (!user) throw 'User not found.';
+        const data = await this.getCollections(true);
+        return this.getStats(applyFilters(loadFilters(params), user.ratings.map(x => [...this.getSolo(x.id, data), x.rating, 0])), data);
     }
 
     async discover(user: User) {
@@ -191,17 +198,15 @@ export default class {
         });
     }
 
-    getRatingStats(ratings: Rating[], [albums, songs, solos]: Collections) {
-        const ratedSolos = solos.map(x => <const>[x, ratings.filter(r => r.id === x.id).map(r => r.rating)]).filter(x => x[1].length);
+    getStats(ratings: Solos, [albums, songs, solos, users]: Collections) {
+        const ratedSolos = solos.map(x => <const>[x, ratings.filter(r => r[0].id === x.id).map(r => r[3])]).filter(x => x[1].length);
         const ratedSongs = songs.map(x => <const>[x, ratedSolos.filter(s => s[0].song === x.id)]).filter(s => s[1].length);
         const albumScores = albums.map(x => {
             const songArr = ratedSongs.filter(s => s[0].album === x.id);
             const soloArr = songArr.flatMap(s => s[1]);
             return <const>[x, songArr.length, soloArr.length, soloArr.flatMap(s => s[1])];
         }).filter(x => x[2]);
-        return {
-            ratings: Array.from({ length: 11 }, (_, i) => [i, ratings.filter(x => x.rating === i).length]).filter(x => x[1]),
-            albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]),
+        const obj = {
             ...<Record<'artists' | 'years', any[]>>Object.fromEntries((<const>['artist', 'year']).map(k => [k + 's', [...new Set(albumScores.map(x => x[0][k]))].map(x => {
                 const arr = albumScores.filter(a => a[0][k] === x);
                 return <const>[x + '', arr.reduce((a, b) => a + b[1], 0), arr.reduce((a, b) => a + b[2], 0), ...getScore(arr.flatMap(a => a[3])), arr.length];
@@ -221,17 +226,18 @@ export default class {
                 return <const>[x, songArr.length, soloArr.length, ...getScore(soloArr.flatMap(s => s[1]))];
             }),
         };
+        return {
+            total: [users?.length, ratedSolos.length, ratedSongs.length, albumScores.length, obj.artists.length, obj.guitarists.length],
+            averageDuration: ratedSolos.reduce((a, b) => a + b[0].end - b[0].start, 0) / ratedSolos.length,
+            ratings: Array.from({ length: 11 }, (_, i) => [i, ratings.filter(x => x[3] === i).length]).filter(x => x[1]),
+            albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]),
+            ...obj,
+        };
     }
 
-    async getStats() {
-        const [albums, songs, solos, users] = await this.getCollections(true, true);
-        const ratings = users.flatMap(x => x.ratings);
-        const ratingStats = this.getRatingStats(ratings, <Collections><unknown>[albums, songs, solos]);
-        return {
-            total: [users.length, solos.length, songs.length, albums.length, ratingStats.artists.length, ratingStats.guitarists.length],
-            averageDuration: solos.reduce((a, b) => a + b.end - b.start, 0) / solos.length,
-            ...ratingStats,
-        };
+    async getTotalStats(params: Record<string, any>) {
+        const data = await this.getCollections(true, true);
+        return this.getStats(applyFilters(loadFilters(params), <Solos>data[3].flatMap(x => x.ratings.map(r => [...this.getSolo(r.id, data), r.rating]))), data);
     }
 
     async edit(entry: string[], data: any) {
@@ -277,4 +283,5 @@ export default class {
     }
 }
 
+type Data = Record<'albums' | 'songs' | 'solos', number>;
 type Collections = [WithId<Album>[], WithId<Song>[], WithId<Solo>[], WithId<User>[]];

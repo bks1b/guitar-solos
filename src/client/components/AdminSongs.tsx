@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Album, Song } from '../../types';
+import { Album, Song } from '../../util';
 import { MainContext } from '../util';
 
 export default ({ arr }: { arr: [Song, Album][]; }) => {

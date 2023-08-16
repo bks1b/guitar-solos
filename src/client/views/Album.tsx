@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { Album, Song } from '../../types';
+import { Album, Song } from '../../util';
 import { MainContext, enterKeydown, toFixed } from '../util';
 import AuthText from '../components/AuthText';
 
@@ -39,7 +39,7 @@ export default ({ id }: { id: string; }) => {
                     ? <div>
                         <a>{album[1].length} songs, {album[2]} solos</a>
                         <br/>
-                        <a>{toFixed(album[3])}/10 average rating, {album[4]} total ratings</a>
+                        <a>{album[3] ? `${toFixed(album[3])}/10 average rating, ` : ''}{album[4]} total ratings</a>
                     </div>
                     : ''
             }

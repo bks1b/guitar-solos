@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from 'react';
-import { Auth, User } from '../../types';
+import { Auth, User } from '../../util';
 import { MainContext, enterKeydown } from '../util';
 
 export default ({ type }: { type: string; }) => {
