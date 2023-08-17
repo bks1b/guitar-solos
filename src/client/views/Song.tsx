@@ -12,7 +12,7 @@ export default ({ id }: { id: string; }) => {
     const { request, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
     const selected = new URLSearchParams(window.location.search).get('solo');
     const [reload, setReload] = useState(0);
-    const [song, setSong] = useState<[Song, Album, [Solo, Solos, number, number, number][]]>();
+    const [song, setSong] = useState<Data>();
     const [error, setError] = useState(false);
     const [hidden, setHidden] = useState<Record<string, boolean>>({});
     const startM = useRef<HTMLInputElement>(null);
@@ -40,12 +40,31 @@ export default ({ id }: { id: string; }) => {
     };
     const rate = (x: [Solo, ...any]) => () => request('/rate', { id: x[0].id, rating: +ratings[x[0].id].value }, () => setReload(reload + 1));
     useEffect(() => {
-        request<[Song, Album, [Solo, Solos, number, number, number][]]>('/get/song?id=' + id, null, x => setSong(x), () => setError(true));
+        request<Data>('/get/song?id=' + id, null, x => setSong(x), () => setError(true));
     }, [reload]);
     useEffect(() => {
         if (song) {
             document.title = `${song[0].name} - ${song[1].artist} | Guitar Solos`;
-            if (!reload && selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
+            if (!reload) {
+                for (const s of song[2]) new YT.Player('container-' + s[0].id, {
+                    width: 300,
+                    height: 150,
+                    videoId: song[0].youtube,
+                    playerVars: {
+                        start: s[0].start,
+                        end: s[0].end + 2,
+                    },
+                    events: {
+                        onStateChange: e => {
+                            if (!e.data) {
+                                e.target.pauseVideo();
+                                e.target.seekTo(s[0].start, true);
+                            }
+                        },
+                    },
+                });
+                if (selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
+            }
         }
     }, [song]);
     return song
@@ -130,7 +149,7 @@ export default ({ id }: { id: string; }) => {
                                         : <AuthText text='rate this solo'/>
                                 }
                                 <h3 className='center'>Audio</h3>
-                                <iframe src={`https://www.youtube.com/embed/${song[0].youtube}?start=${x[0].start}&end=${x[0].end + 2}`}/>
+                                <div id={'container-' + x[0].id}/>
                                 {
                                     x[1].length
                                         ? <>
@@ -164,3 +183,5 @@ export default ({ id }: { id: string; }) => {
             ? <h1>Song not found.</h1>
             : <></>;
 };
+
+type Data = [Song, Album, [Solo, Solos, number, number, number][]];
