@@ -15,6 +15,7 @@ export default ({ id }: { id: string; }) => {
     const [song, setSong] = useState<Data>();
     const [error, setError] = useState(false);
     const [hidden, setHidden] = useState<Record<string, boolean>>({});
+    const [players, setPlayers] = useState<string[]>([]);
     const startM = useRef<HTMLInputElement>(null);
     const startS = useRef<HTMLInputElement>(null);
     const endM = useRef<HTMLInputElement>(null);
@@ -45,26 +46,25 @@ export default ({ id }: { id: string; }) => {
     useEffect(() => {
         if (song) {
             document.title = `${song[0].name} - ${song[1].artist} | Guitar Solos`;
-            if (!reload) {
-                for (const s of song[2]) new YT.Player('container-' + s[0].id, {
-                    width: 300,
-                    height: 150,
-                    videoId: song[0].youtube,
-                    playerVars: {
-                        start: s[0].start,
-                        end: s[0].end + 2,
+            if (!reload && selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
+            for (const s of song[2]) if (!players.includes(s[0].id)) new YT.Player('container-' + s[0].id, {
+                width: 300,
+                height: 150,
+                videoId: song[0].youtube,
+                playerVars: {
+                    start: s[0].start,
+                    end: s[0].end + 2,
+                },
+                events: {
+                    onStateChange: e => {
+                        if (!e.data) {
+                            e.target.pauseVideo();
+                            e.target.seekTo(s[0].start, true);
+                        }
                     },
-                    events: {
-                        onStateChange: e => {
-                            if (!e.data) {
-                                e.target.pauseVideo();
-                                e.target.seekTo(s[0].start, true);
-                            }
-                        },
-                    },
-                });
-                if (selected && song[2].some(x => x[0].id === selected)) setHidden(Object.fromEntries(song[2].map(x => [x[0].id, x[0].id !== selected])));
-            }
+                },
+            });
+            setPlayers(song[2].map(x => x[0].id));
         }
     }, [song]);
     return song
