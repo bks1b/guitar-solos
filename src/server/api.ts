@@ -49,7 +49,7 @@ export default Router()
     .post('/add/album', handler((req, u) => {
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
         if (typeof req.body?.artist !== 'string' || !req.body.artist.trim()) throw 'Artist expected.';
-        if (!checkInt(req.body?.year)) throw 'Year expected to be a nonnegative integer.';
+        if (!checkInt(req.body?.year) || !req.body.year) throw 'Year expected to be a positive integer.';
         return db.addAlbum({
             name: req.body.name.trim(),
             artist: req.body.artist.trim(),
