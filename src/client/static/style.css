@@ -1,6 +1,7 @@
 :root {
-    --mobile-scale: 0.8;
-    --mobile-img-scale: 0.8;
+    --mobile-album-info-scale: 0.85;
+    --mobile-chart-scale: 0.775;
+    --mobile-small-albums-scale: 0.85;
     --big-cover: 300px;
     --medium-cover: 175px;
     --small-cover: 150px;
@@ -19,7 +20,7 @@ body {
     overflow: hidden;
 }
 
-@media only screen and (min-width: 600px) {
+@media only screen and (min-width: 900px) {
     .albumInfo:not(.chart) img {
         width: var(--big-cover);
     }
@@ -49,23 +50,37 @@ body {
     .albumInfo:not(.chart) {
         justify-content: center;
     }
+
+    .albumInfo {
+        flex-direction: row;
+    }
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 900px) {
+    .albumInfo:not(.chart) {
+        zoom: var(--mobile-album-info-scale);
+        flex-direction: column;
+        text-align: center;
+    }
+
     .albumInfo:not(.chart) img {
-        width: calc(var(--big-cover) * var(--mobile-img-scale));
+        width: calc(var(--big-cover) * var(--mobile-album-info-scale));
+    }
+
+    .chart {
+        zoom: var(--mobile-chart-scale);
     }
 
     .chart img {
-        width: calc(var(--medium-cover) * var(--mobile-img-scale));
+        width: calc(var(--medium-cover) * var(--mobile-chart-scale));
+    }
+
+    .smallAlbums {
+        zoom: var(--mobile-small-albums-scale);
     }
     
     .smallAlbums img {
-        width: calc(var(--small-cover) * var(--mobile-img-scale));
-    }
-
-    .smallAlbums, .albumInfo {
-        zoom: var(--mobile-scale);
+        width: calc(var(--small-cover) * var(--mobile-small-albums-scale));
     }
 
     * {
@@ -165,7 +180,6 @@ button:hover {
 .albumInfo {
     display: flex;
     gap: 10px;
-    flex-direction: row;
     align-items: center;
 }
 

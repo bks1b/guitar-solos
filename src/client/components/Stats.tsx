@@ -95,7 +95,7 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
                     {j ? <a> </a> : ''}
                     <select defaultValue={sortState.keys[i][j]} onChange={e => sortDispatch([i, j, +e.target.selectedOptions[0].value])}>{a.map((x, k) => !profile || x !== 'popularity' ? <option key={k} value={k}>{x}</option> : '')}</select>
                 </Fragment>)}
-                <List arr={arr.map((x, i) => f(x as any, i))} step={STEP}/>
+                <List length={arr.length} step={STEP} render={c => arr.slice(0, c).map((x, i) => f(x as any, i))}/>
             </Fragment>;
         })}
     </div>;
