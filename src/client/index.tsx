@@ -40,6 +40,7 @@ const App = () => {
     const [path, setPath] = useState(getPath());
     const [sidebar, setSidebar] = useState(lastSidebar);
     const [wait, setWait] = useState(!!localStorage.getItem('auth'));
+    const [loaded, setLoaded] = useState(false);
     const search = useRef<HTMLInputElement>(null);
     const getSearchPath = () => ['search', search.current!.value];
     useEffect(() => {
@@ -50,22 +51,25 @@ const App = () => {
         } catch {
             setWait(false);
         }
+    }, []);
+    if (!loaded) {
         const observer = new MutationObserver(() => {
             const container = document.querySelector('.contentContainer') as HTMLElement;
             if (container) {
                 observer.disconnect();
-                (window.onresize = () => {
+                (window.onresize = () => setTimeout(() => {
                     const h = window.innerHeight + 'px';
                     root.style.height = h;
                     container.style.height = `calc(${h} - ${getComputedStyle(container).getPropertyValue('--content-height-off')})`;
-                })();
+                }))();
             }
         });
         observer.observe(document.body, {
             childList: true, 
             subtree: true,
         });
-    }, []);
+        setLoaded(true);
+    }
     if (sidebar === lastSidebar) id = Date.now();
     lastSidebar = sidebar;
     return wait
