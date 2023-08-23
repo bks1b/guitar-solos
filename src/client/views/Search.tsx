@@ -20,7 +20,7 @@ export default ({ str }: { str: string; }) => {
                 data[i].length
                     ? <>
                         <h1>{x}</h1>
-                        <List arr={data[i] as Solos} step={STEP} render={a => <Albums arr={a} album={!i}/>}/>
+                        <List length={data[i].length} step={STEP} center render={c => <Albums arr={data[i].slice(0, c) as Solos} album={!i}/>}/>
                     </>
                     : ''
             }</Fragment>)}
@@ -28,7 +28,7 @@ export default ({ str }: { str: string; }) => {
                 data[i + 2].length
                     ? <>
                         <h1>{x}</h1>
-                        <List arr={(data[i + 2] as string[]).map((y, j) => <li key={j} className='link' {...navigateOnClick(...(i ? [[], [[x.toLowerCase(), y.toLowerCase()]]] : [['profile', y]]) as [string[], string[][]])}>{y}</li>)} step={LIST_STEP} render={a => <ul>{a}</ul>}/>
+                        <List length={data[i + 2].length} step={LIST_STEP} render={c => <ul>{(data[i + 2] as string[]).slice(0, c).map((y, j) => <li key={j} className='link' {...navigateOnClick(...(i ? [[], [[x.toLowerCase(), y.toLowerCase()]]] : [['profile', y]]) as [string[], string[][]])}>{y}</li>)}</ul>}/>
                     </>
                     : ''
             }</Fragment>)}

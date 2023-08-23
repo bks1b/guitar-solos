@@ -3,6 +3,9 @@ import Ratings from '../components/Ratings';
 import { getTimestamp, MainContext, onClick, resolveParams, updateParams } from '../util';
 import { Filter, Sort, getFilterReducer, getSortReducer } from '../components/Filters';
 import { Solos, applyFilters } from '../../util';
+import List from '../components/List';
+
+const STEP = 200;
 
 const getScore = (x: Solos[number]) => x[4] ? x[3] / x[4] ** 0.8 : 0;
 
@@ -27,7 +30,7 @@ export default () => {
         <Sort state={sortState} dispatch={sortDispatch}/>
         {
             results.length
-                ? results.map((x, i) => <div key={i} className='albumInfo chart'>
+                ? <List length={results.length} step={STEP} render={c => results.slice(0, c).map((x, i) => <div key={i} className='albumInfo chart'>
                     <h1>{i + 1}.</h1>
                     <img src={x[2].cover} className='link' {...navigateOnClick(['album', x[2].id])}/>
                     <div>
@@ -36,7 +39,7 @@ export default () => {
                         <h3>{getTimestamp(x[0].start)}-{getTimestamp(x[0].end)}</h3>
                         <Ratings sum={x[3]} count={x[4]}/>
                     </div>
-                </div>)
+                </div>)}/>
                 : <h2>No matching solos found.</h2>
         }
     </>;

@@ -4,6 +4,9 @@ import { MainContext, StatsType, resolveParams, updateParams } from '../util';
 import { Filter, Sort, getFilterReducer, getSortReducer } from '../components/Filters';
 import RatingStats, { getStatSortReducer } from '../components/Stats';
 import { Solos, applyFilters } from '../../util';
+import List from '../components/List';
+
+const STEP = 150;
 
 export default ({ name }: { name: string; }) => {
     const { request } = useContext(MainContext)!;
@@ -42,7 +45,7 @@ export default ({ name }: { name: string; }) => {
                                 <div style={{ marginBottom: 'var(--content-padding)' }}><Sort state={ratingSortState} dispatch={ratingSortDispatch}/></div>
                                 {
                                     arr.length
-                                        ? <Albums arr={arr} navigateArtist={a => m => m ? window.open(resolveParams(filterState.getParams(0, a))) : filterDispatch(['filter', 0, [a], true])} ratings ts/>
+                                        ? <List length={arr.length} step={STEP} center render={c => <Albums arr={arr.slice(0, c)} navigateArtist={a => m => m ? window.open(resolveParams(filterState.getParams(0, a))) : filterDispatch(['filter', 0, [a], true])} ratings ts/>}/>
                                         : <h2>No matching solos found.</h2>
                                 }
                             </>
