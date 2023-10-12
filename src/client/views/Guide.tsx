@@ -26,7 +26,7 @@ export default () => {
         </ul>
         <h2>Videos</h2>
         <ul>
-            <li>Live recordings are only allowed if they are high quality, official recordings, and a studio recording does not exist.</li>
+            <li>Live recordings are only allowed if they are high quality, official recordings.</li>
             <li>YouTube videos must be high quality, music videos must not be uploaded, and the official audio must be used if it exists.</li>
         </ul>
         <h2>Album covers</h2>
