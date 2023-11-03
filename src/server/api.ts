@@ -106,9 +106,8 @@ export default Router()
     .get('/discover', handler((_, u) => db.discover(u), true))
     .get('/random/:type', handler(async req => {
         if (!['album', 'song', 'solo'].includes(req.params.type)) throw 'Type expected to be album, song or solo.';
-        const arr = await (await db.db).collection<Solo>(req.params.type + 's').find().toArray();
-        const random = arr[Math.floor(Math.random() * arr.length)];
-        return req.params.type === 'solo' ? { id: random.song, solo: random.id } : { id: random.id };
+        const id = (Math.floor(Math.random() * (await (await db.db).collection('data').findOne({}))![req.params.type + 's']) + 1).toString(16);
+        return req.params.type === 'solo' ? { id: (await (await db.db).collection('solos').findOne({ id }))!.song, solo: id } : { id };
     }))
     .post('/profile', handler(async req => {
         if (typeof req.body?.name !== 'string') throw 'Name expected.';
