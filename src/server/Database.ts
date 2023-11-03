@@ -10,10 +10,17 @@ export default class {
         this.db = client.connect().then(() => client.db('song_list'));
     }
 
-    private async getCount(key: keyof Data) {
+    private async getNewID(key: keyof Data) {
         const data = (await this.db).collection<Data>('data');
         const count = (await data.findOne({}))![key] + 1;
         await data.updateOne({}, { $set: { [key]: count } });
+        return count.toString(16);
+    }
+
+    private async getLatestID(key: keyof Data) {
+        const data = (await this.db).collection<Data>('data');
+        const count = (await data.findOne({}))![key];
+        await data.updateOne({}, { $set: { [key]: count - 1 } });
         return count.toString(16);
     }
 
@@ -71,7 +78,7 @@ export default class {
         const lower = { lowerName: data.name.toLowerCase(), lowerArtist: data.artist.toLowerCase() };
         const coll = (await this.db).collection<Album>('albums');
         if (await coll.findOne(lower)) throw 'This album is already listed.';
-        const id = await this.getCount('albums');
+        const id = await this.getNewID('albums');
         if (!admin) data.unverified = true;
         await coll.insertOne({ ...data, id, ...lower });
         return { id };
@@ -81,7 +88,7 @@ export default class {
         const coll = (await this.db).collection<Song>('songs');
         if (await coll.findOne({ lowerName: data.name.toLowerCase(), album: data.album })) throw 'This song is already listed on the album.';
         if (!await (await this.db).collection<Album>('albums').findOne({ id: data.album })) throw 'Album not found.';
-        const id = await this.getCount('songs');
+        const id = await this.getNewID('songs');
         if (!admin) data.unverified = true;
         await coll.insertOne({ ...data, id, lowerName: data.name.toLowerCase() });
         return { id };
@@ -90,7 +97,7 @@ export default class {
     async addSolo(data: Omit<Solo, 'id'>, admin?: boolean) {
         if (!await (await this.db).collection<Song>('songs').findOne({ id: data.song })) throw 'Song not found.';
         if (!admin) data.unverified = true;
-        return (await this.db).collection<Solo>('solos').insertOne({ ...data, id: await this.getCount('solos') });
+        return (await this.db).collection<Solo>('solos').insertOne({ ...data, id: await this.getNewID('solos') });
     }
 
     async getAlbum(id: string) {
@@ -264,22 +271,43 @@ export default class {
     }
 
     async deleteAlbum(id: string) {
-        const songs = await (await this.db).collection<Song>('songs').find({ album: id }).toArray();
+        const albumsColl = (await this.db).collection('albums');
+        const songsColl = (await this.db).collection<Song>('songs');
+        const songs = await songsColl.find({ album: id }).toArray();
         for (const s of songs) await this.deleteSong(s.id);
-        await (await this.db).collection('albums').deleteOne({ id });
+        await albumsColl.deleteOne({ id });
+        const latestID = await this.getLatestID('albums');
+        if (id !== latestID) {
+            await albumsColl.updateOne({ id: latestID }, { $set: { id } });
+            await songsColl.updateMany({ album: latestID }, { $set: { album: id } });
+        }
     }
 
     async deleteSong(id: string) {
-        const solos = await (await this.db).collection<Solo>('solos').find({ song: id }).toArray();
+        const songsColl = (await this.db).collection('songs');
+        const solosColl = (await this.db).collection<Solo>('solos');
+        const solos = await songsColl.find({ song: id }).toArray();
         for (const s of solos) await this.deleteSolo(s.id);
-        await (await this.db).collection('songs').deleteOne({ id });
+        await songsColl.deleteOne({ id });
+        const latestID = await this.getLatestID('songs');
+        if (id !== latestID) {
+            await songsColl.updateOne({ id: latestID }, { $set: { id } });
+            await solosColl.updateMany({ song: latestID }, { $set: { song: id } });
+        }
     }
 
     async deleteSolo(id: string) {
+        const solosColl = (await this.db).collection('solos');
         const usersColl = (await this.db).collection<User>('users');
-        const users = await usersColl.find({ 'ratings.id': id }).toArray();
-        for (const u of users) await usersColl.updateOne({ name: u.name }, { $set: { ratings: u.ratings.filter(r => r.id !== id) } });
-        await (await this.db).collection('solos').deleteOne({ id });
+        const removeUsers = await usersColl.find({ 'ratings.id': id }).toArray();
+        for (const u of removeUsers) await usersColl.updateOne({ name: u.name }, { $set: { ratings: u.ratings.filter(r => r.id !== id) } });
+        await solosColl.deleteOne({ id });
+        const latestID = await this.getLatestID('solos');
+        if (id !== latestID) {
+            await solosColl.updateOne({ id: latestID }, { $set: { id } });
+            const replaceUsers = await usersColl.find({ 'ratings.id': latestID }).toArray();
+            for (const u of replaceUsers) await usersColl.updateOne({ name: u.name }, { $set: { ratings: u.ratings.map(r => r.id === latestID ? { ...r, id } : r) } });
+        }
     }
 }
 
