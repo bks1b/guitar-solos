@@ -3,10 +3,10 @@ import { MainContext, enterKeydown } from '../util';
 
 export default () => {
     const { request, navigate } = useContext(MainContext)!;
-    const refs = ['name', 'artist', 'year', 'cover'].map(k => [k, useRef<HTMLInputElement>(null)] as const);
+    const refs = ['name', 'artist', 'year', 'cover', 'defaultGenres'].map(k => [k, useRef<HTMLInputElement>(null)] as const);
     const search = useRef<HTMLInputElement>(null);
     const [results, setResults] = useState<string[][]>([]);
-    const submit = () => request<{ id: string; }>('/add/album', Object.fromEntries(refs.map((x, i) => [x[0], i === 2 ? +x[1].current!.value : x[1].current!.value])), d => navigate(['album', d.id]));
+    const submit = () => request<{ id: string; }>('/add/album', Object.fromEntries(refs.map((x, i) => [x[0], (v => i === 2 ? +v : i === 4 ? v.split(',') : v)(x[1].current!.value)])), d => navigate(['album', d.id]));
     const geniusSearch = () => request<string[][]>('/genius', { query: search.current!.value }, d => setResults(d));
     useEffect(() => {
         document.title = 'Add Album | Guitar Solos';
@@ -19,6 +19,8 @@ export default () => {
         <label>Year: <input type='number' ref={refs[2][1]} {...enterKeydown(submit)}/></label>
         <br/>
         <label>Cover URL: <input ref={refs[3][1]} {...enterKeydown(submit)}/></label>
+        <br/>
+        <label>Default genres: <input ref={refs[4][1]} placeholder='Separated by ,' {...enterKeydown(submit)}/></label>
         <br/>
         <button onClick={submit}>Add</button>
         <hr/>

@@ -46,8 +46,9 @@ export default () => {
         <h2>Adding albums</h2>
         <ul>
             <li>Go to the "Add album" tab on the left, and type the album's name next to the "Search on Genius" button, then click the button.</li>
-            <li>If the album shows up, click "Load", then "Add". Make sure to remove the "Cover URL" field if the cover is NSFW.</li>
+            <li>If the album shows up, click "Load", input the album's default genres, then click "Add". Make sure to remove the "Cover URL" field if the cover is NSFW.</li>
             <li>If the album does not show up, manually input the album's data, then click "Add".</li>
+            <li>The "Default genres" of an album are the genres which most songs have. Their only purpose is to make adding songs faster by automatically completing the "Genres" field.</li>
             <li>You will get redirected to the album's page, where you can now add songs.</li>
         </ul>
         <h2>Adding songs</h2>

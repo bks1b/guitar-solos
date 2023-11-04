@@ -7,6 +7,7 @@ import { hash } from './util';
 export const db = new Database();
 
 const checkInt = (n: number) => typeof n === 'number' && Number.isInteger(n) && n >= 0;
+const trimGenres = (a: any) => (a as string[]).map(x => x.trim().toLowerCase()).filter(x => x);
 const checkAuth = (arr: Auth) => {
     if (!Array.isArray(arr) || [arr[0], arr[1]].some(x => typeof x !== 'string')) throw 'Invalid authorization.';
 };
@@ -50,17 +51,19 @@ export default Router()
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
         if (typeof req.body?.artist !== 'string' || !req.body.artist.trim()) throw 'Artist expected.';
         if (!checkInt(req.body?.year) || !req.body.year) throw 'Year expected to be a positive integer.';
+        if (!Array.isArray(req.body.defaultGenres)) throw 'Default genres expected.';
         return db.addAlbum({
             name: req.body.name.trim(),
             artist: req.body.artist.trim(),
             cover: req.body.cover?.trim() || '/cover.png',
             year: req.body.year,
+            defaultGenres: trimGenres(req.body.defaultGenres),
         }, u.admin);
     }, true))
     .post('/add/song', handler((req, u) => {
         if (typeof req.body?.album !== 'string') throw 'Album expected.';
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
-        if (!Array.isArray(req.body?.genres) || !(req.body.genres as string[]).filter(x => x.trim()).length) throw 'Genres expected.';
+        if (!Array.isArray(req.body.genres) || !(req.body.genres as string[]).filter(x => x.trim()).length) throw 'Genres expected.';
         if (typeof req.body?.youtube !== 'string') throw 'YouTube URL or ID expected.';
         const youtube = req.body.youtube.match(/(.*youtu\.be\/|.*[?&]v=)?([^?& ]+)/)?.[2];
         if (!youtube) throw 'Invalid YouTube URL or ID.';
@@ -68,7 +71,7 @@ export default Router()
             album: req.body.album,
             name: req.body.name.trim(),
             youtube,
-            genres: (req.body.genres as string[]).map(x => x.trim().toLowerCase()).filter(x => x),
+            genres: trimGenres(req.body.genres),
         }, u.admin);
     }, true))
     .post('/add/solo', handler(async (req, u) => {

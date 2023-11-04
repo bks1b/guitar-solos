@@ -46,12 +46,7 @@ export default ({ id }: { id: string; }) => {
             {
                 admin
                     ? <>
-                        <textarea defaultValue={JSON.stringify({
-                            name: album[0].name,
-                            artist: album[0].artist,
-                            year: album[0].year,
-                            cover: album[0].cover,
-                        }, undefined, 4)} ref={edit}/>
+                        <textarea defaultValue={JSON.stringify(Object.fromEntries((['name', 'artist', 'year', 'cover', 'defaultGenres'] as const).map(k => [k, album[0][k]])), undefined, 4)} ref={edit}/>
                         <div className='row'>
                             <button onClick={() => {
                                 const d = JSON.parse(edit.current!.value);
@@ -82,7 +77,7 @@ export default ({ id }: { id: string; }) => {
                         <h1>Add song</h1>
                         <label>Name: <input ref={name} {...enterKeydown(submit)}/></label>
                         <br/>
-                        <label>Genres: <input ref={genres} placeholder='Separated by ,' {...enterKeydown(submit)}/></label>
+                        <label>Genres: <input ref={genres} defaultValue={album[0].defaultGenres.join(', ')} placeholder='Separated by ,' {...enterKeydown(submit)}/></label>
                         <br/>
                         <label>YouTube URL or ID: <input ref={yt} {...enterKeydown(submit)}/></label>
                         <br/>

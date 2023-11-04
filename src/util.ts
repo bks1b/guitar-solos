@@ -30,6 +30,7 @@ export type Album = {
     artist: string;
     lowerName: string;
     lowerArtist: string;
+    defaultGenres: string[];
     year: number;
     cover: string;
     unverified?: boolean;
