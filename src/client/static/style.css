@@ -307,3 +307,11 @@ textarea, input {
 .underline {
     text-decoration: underline;
 }
+
+.removeButton {
+    border: 1px solid red;
+}
+
+.tierlistButton {
+    margin: var(--content-padding) var(--content-padding) 0px 0px;
+}
