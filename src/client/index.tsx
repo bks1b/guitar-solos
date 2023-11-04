@@ -135,11 +135,13 @@ const App = () => {
                                     ? <Info/>
                                     : path[0] === 'guide'
                                         ? <Guide/>
-                                        : (user.loggedIn ? ['settings'] : ['login', 'signup']).includes(path[0])
-                                            ? <Auth type={path[0]}/>
-                                            : path[0] === 'admin' && user.admin
-                                                ? <Admin/>
-                                                : undefined
+                                        : path[0] === 'tierlist'
+                                            ? <Charts tierlist/>
+                                            : (user.loggedIn ? ['settings'] : ['login', 'signup']).includes(path[0])
+                                                ? <Auth type={path[0]}/>
+                                                : path[0] === 'admin' && user.admin
+                                                    ? <Admin/>
+                                                    : undefined
                             : path.length ? undefined : <Charts/>) || <h1>Page not found.</h1>
                 }</div></div>
             </div>

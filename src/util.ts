@@ -3,6 +3,7 @@ export const loadFilters = (params: Record<string, string>): Filters => ([
     ['guitarists', x => x[0].guitarists, true],
     ['genres', x => x[1].genres, true],
     ['years', x => [x[2].year + ''], false],
+    ['albums', x => [x[2].id], false],
 ] as [string, (x: Solos[number]) => string[], boolean][]).map(x => [...x, params[x[0]]?.toLowerCase().split(';') || [], params[x[0] + '_mode'] === 'all']);
 export const applyFilters = (arr: Filters, solos: Solos) => solos.filter(x => arr.every(y => {
     const arr = y[1](x as any).map(s => s.toLowerCase());
