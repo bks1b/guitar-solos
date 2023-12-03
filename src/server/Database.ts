@@ -232,6 +232,10 @@ export default class {
                 const soloArr = songArr.flatMap(s => s[1]);
                 return <const>[x, songArr.length, soloArr.length, ...getScore(soloArr.flatMap(s => s[1]))];
             }),
+            tags: [...new Set(ratedSolos.flatMap(x => x[0].tags))].map(x => {
+                const arr = ratedSolos.filter(s => s[0].tags.includes(x));
+                return <const>[x, 0, arr.length, ...getScore(arr.flatMap(s => s[1]))];
+            }),
         };
         return {
             total: [users?.length, ratedSolos.length, ratedSongs.length, albumScores.length, obj.artists.length, obj.guitarists.length],
@@ -263,10 +267,10 @@ export default class {
                 songs.filter(x => x.unverified).map(x => [x, albums.find(a => a.id === x.album)]),
                 solos.filter(x => x.unverified).map(x => this.getSolo(x.id, <Collections><unknown>[albums, songs, solos])),
             ],
-            noGuitarists: [...new Set(solos.filter(x => !x.guitarists.length).map(x => x.song))].map(x => {
+            ...Object.fromEntries((<const>['guitarists', 'tags']).map(k => [k, [...new Set(solos.filter(x => !x[k].length).map(x => x.song))].map(x => {
                 const song = songs.find(s => s.id === x)!;
                 return [song, albums.find(a => a.id === song.album)];
-            }),
+            })])),
         };
     }
 

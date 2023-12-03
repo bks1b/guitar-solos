@@ -41,11 +41,12 @@ export default () => {
         <ul>
             <li>Go to a song's page, either by using the search feature on the top, or adding a new song.</li>
             <li>Input the solo's start and end (minutes:seconds) and its guitarist(s), if known.</li>
+            <li>Tick the tags which the solo matches. A solo counts as an intro or outro if there are no important parts of the song (sung vocals, solos, longer instrumental breaks) before or after it, respectively.</li>
             <li>Click "Add". You can now rate the solo.</li>
         </ul>
         <h2>Adding albums</h2>
         <ul>
-            <li>Go to the "Add album" tab on the left, and type the album's name next to the "Search on Genius" button, then click the button.</li>
+            <li>Click the "Add album" button on the sidebar, type the album's name next to the "Search on Genius" button, then click the button.</li>
             <li>If the album shows up, click "Load", input the album's default genres, then click "Add". Make sure to remove the "Cover URL" field if the cover is NSFW.</li>
             <li>If the album does not show up, manually input the album's data, then click "Add".</li>
             <li>The "Default genres" of an album are the genres which most songs have. Their only purpose is to make adding songs faster by automatically completing the "Genres" field.</li>
@@ -60,7 +61,7 @@ export default () => {
         <h2>Filters</h2>
         <ul>
             <li>The fields at the top of certain pages ("Charts" and profiles) allow you to filter and sort the listed solos.</li>
-            <li>The dropdowns next to certain fields ("Genres" and "Guitarists") allow you to choose whether all or any of the queries must match.</li>
+            <li>The dropdowns next to certain fields ("Genres", "Tags" and "Guitarists") allow you to choose whether all or any of the queries must match.</li>
             <li>By typing a percent sign (%) in front of a query, you can exclude the query from the results. For example, typing "death metal; %melodic death metal" into the "Genres" field shows all death metal songs that aren't melodic death metal.</li>
             <li>The "Albums" field expects album IDs.</li>
         </ul>

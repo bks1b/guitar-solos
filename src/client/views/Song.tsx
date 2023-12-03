@@ -8,6 +8,8 @@ import AuthText from '../components/AuthText';
 
 const TimeInput = ({ _ref, sec, f }: { _ref: RefObject<HTMLInputElement>; sec?: boolean; f: () => any; }) => <input type='number' min={0} max={sec ? 59 : undefined} placeholder={sec ? 's' : 'm'} className='num' ref={_ref} {...enterKeydown(f)}/>;
 
+const tags = ['electric', 'acoustic', 'bass', 'slide', 'backwards', 'electric over acoustic', 'intro', 'outro'];
+
 export default ({ id }: { id: string; }) => {
     const { request, navigateOnClick, loggedIn, admin } = useContext(MainContext)!;
     const selected = new URLSearchParams(window.location.search).get('solo');
@@ -21,6 +23,7 @@ export default ({ id }: { id: string; }) => {
     const endM = useRef<HTMLInputElement>(null);
     const endS = useRef<HTMLInputElement>(null);
     const guitarists = useRef<HTMLInputElement>(null);
+    const tagRefs = tags.map(() => useRef<HTMLInputElement>(null));
     const edit = useRef<HTMLTextAreaElement>(null);
     const ratings: Record<string, HTMLInputElement> = {};
     const solos: Record<string, HTMLInputElement> = {};
@@ -31,8 +34,10 @@ export default ({ id }: { id: string; }) => {
                 start: getSecs(startM, startS),
                 end: getSecs(endM, endS),
                 guitarists: guitarists.current!.value.split(';'),
+                tags: tags.filter((_, i) => tagRefs[i].current!.checked),
             }, () => {
                 startM.current!.value = startS.current!.value = endM.current!.value = endS.current!.value = guitarists.current!.value = '';
+                tagRefs.forEach(r => r.current!.checked = false);
                 setReload(reload + 1);
             });
         } catch (e) {
@@ -77,11 +82,10 @@ export default ({ id }: { id: string; }) => {
                     <h2><a className='label'>on</a> <a className='link' {...navigateOnClick(['album', song[1].id])}>{song[1].name}</a></h2>
                 </div>
             </div>
-            <a>Genres: <LinkList arr={song[0].genres} query='genres'/></a>
+            <div>Genres: <LinkList arr={song[0].genres} query='genres'/></div>
             {
                 admin
                     ? <>
-                        <br/>
                         <textarea defaultValue={JSON.stringify({
                             name: song[0].name,
                             youtube: song[0].youtube,
@@ -113,14 +117,7 @@ export default ({ id }: { id: string; }) => {
                                 <div><button onClick={() => setHidden({ ...hidden, [x[0].id]: !hidden[x[0].id] })}>{hidden[x[0].id] ? 'Show' : 'Hide'}</button></div>
                             </div>
                             <div style={{ display: hidden[x[0].id] ? 'none' : '' }}>
-                                {
-                                    x[0].guitarists.length
-                                        ? <>
-                                            <a>Guitarist{x[0].guitarists.length === 1 ? '' : 's'}: <LinkList arr={x[0].guitarists} query='guitarists'/></a>
-                                            <br/>
-                                        </>
-                                        : ''
-                                }
+                                {(['guitarists', 'tags'] as const).map(k => x[0][k].length ? <div key={k}>{k[0].toUpperCase()}{k.slice(1, x[0][k].length === 1 ? -1 : undefined)}: <LinkList arr={x[0][k]} query={k}/></div> : '')}
                                 <Ratings sum={x[2]} count={x[3]}/>
                                 {
                                     loggedIn
@@ -131,10 +128,10 @@ export default ({ id }: { id: string; }) => {
                                             {
                                                 admin
                                                     ? <div className='row'>
-                                                        <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)), x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
+                                                        <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)), x[0].tags, x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
                                                         <button onClick={() => {
                                                             const d = JSON.parse(solos[x[0].id].value);
-                                                            request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1], guitarists: d[2] } }, () => setReload(reload + 1));
+                                                            request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1], tags: d[2], guitarists: d[3] } }, () => setReload(reload + 1));
                                                         }}>Edit</button>
                                                         <button onClick={() => confirm('Are you sure?') && request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
                                                         {
@@ -171,6 +168,8 @@ export default ({ id }: { id: string; }) => {
                         <label>Start: <TimeInput _ref={startM} f={submit}/>:<TimeInput sec _ref={startS} f={submit}/></label>
                         <br/>
                         <label>End: <TimeInput _ref={endM} f={submit}/>:<TimeInput sec _ref={endS} f={submit}/></label>
+                        <br/>
+                        <a>Tags: </a> {tags.map((t, i) => <label key={t} className='tagLabel'><input type='checkbox' ref={tagRefs[i]}/>{t}</label>)}
                         <br/>
                         <label>Guitarists (leave empty if unknown): <input placeholder='Separated by ;' ref={guitarists} {...enterKeydown(submit)}/></label>
                         <br/>

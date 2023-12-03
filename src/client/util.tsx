@@ -57,5 +57,5 @@ export type StatsType = {
     ratings: number[][];
     albums: [Album, number, number, number, number, number][];
 }
-    & Record<'guitarists' | 'genres', [string, number, number, number, number, number][]>
+    & Record<'guitarists' | 'genres' | 'tags', [string, number, number, number, number, number][]>
     & Record<'artists' | 'years', [string, number, number, number, number, number, number][]>;

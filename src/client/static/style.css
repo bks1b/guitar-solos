@@ -315,3 +315,7 @@ textarea, input {
 .tierlistButton {
     margin: var(--content-padding) var(--content-padding) 0px 0px;
 }
+
+.tagLabel {
+    margin-right: 10px;
+}
