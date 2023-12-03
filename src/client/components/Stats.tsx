@@ -7,7 +7,7 @@ const STEP = 10;
 const TIMEOUT = 500;
 
 const totalKeys = ['solo', 'song', 'album', 'artist', 'guitarist'];
-const statKeys = (['albums', 'artists', 'years', 'guitarists', 'genres'] as const).map(k => [k, ['score', 'popularity', 'solos', k === 'guitarists' ? 'artists' : 'songs', ...['artists', 'years'].includes(k) ? ['albums'] : []]] as const);
+const statKeys = (['albums', 'artists', 'years', 'guitarists', 'genres', 'tags'] as const).map(k => [k, ['score', 'popularity', 'solos', ...(k === 'tags' ? [] : k === 'guitarists' ? ['artists'] : ['songs']), ...['artists', 'years'].includes(k) ? ['albums'] : []]] as const);
 
 export const getStatSortReducer = () => {
     const params = new URLSearchParams(window.location.search);
@@ -73,13 +73,13 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
                     <a>{toFixed(x[4])}/10 average rating{profile ? '' : `, ${x[5]} total ratings`}</a>
                 </div>
             </div>,
-            ...(['artists', 'years', 'guitarists', 'genres'] as const).map((k, j) => (x: StatsType[typeof k][number], i: number) => <div key={i}>
+            ...(['artists', 'years', 'guitarists', 'genres', 'tags'] as const).map((k, j) => (x: StatsType[typeof k][number], i: number) => <div key={i}>
                 <h3>{i + 1}. <a className='link' {...navigateOnClick(path, [[k, x[0].toLowerCase()]])}>{x[0]}</a></h3>
                 <ul>
                     {
                         j < 2
                             ? <li>{x[6]} albums, {x[1]} songs, {x[2]} solos</li>
-                            : [<li>{x[2]} solos, {x[1]} artists</li>, <li>{x[1]} songs, {x[2]} solos</li>][j - 2]
+                            : [<li>{x[2]} solos, {x[1]} artists</li>, <li>{x[1]} songs, {x[2]} solos</li>, <li>{x[2]} solos</li>][j - 2]
                     }
                     <li>{toFixed(x[4])}/10 average rating{profile ? '' : `, ${x[5]} total ratings`}</li>
                 </ul>

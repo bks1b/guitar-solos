@@ -7,7 +7,8 @@ import { hash } from './util';
 export const db = new Database();
 
 const checkInt = (n: number) => typeof n === 'number' && Number.isInteger(n) && n >= 0;
-const trimGenres = (a: any) => (a as string[]).map(x => x.trim().toLowerCase()).filter(x => x);
+const checkStringArray = (a: any, nonempty = false) => Array.isArray(a) && (a as string[]).every(s => typeof s === 'string') && (!nonempty || a.filter(x => x.trim()).length);
+const trimArray = (a: any, lower = false) => (a as string[]).map(x => (s => lower ? s.toLowerCase() : s)(x.trim())).filter(x => x);
 const checkAuth = (arr: Auth) => {
     if (!Array.isArray(arr) || [arr[0], arr[1]].some(x => typeof x !== 'string')) throw 'Invalid authorization.';
 };
@@ -51,19 +52,19 @@ export default Router()
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
         if (typeof req.body?.artist !== 'string' || !req.body.artist.trim()) throw 'Artist expected.';
         if (!checkInt(req.body?.year) || !req.body.year) throw 'Year expected to be a positive integer.';
-        if (!Array.isArray(req.body.defaultGenres)) throw 'Default genres expected.';
+        if (!checkStringArray(req.body.defaultGenres)) throw 'Default genres expected.';
         return db.addAlbum({
             name: req.body.name.trim(),
             artist: req.body.artist.trim(),
             cover: req.body.cover?.trim() || '/cover.png',
             year: req.body.year,
-            defaultGenres: trimGenres(req.body.defaultGenres),
+            defaultGenres: trimArray(req.body.defaultGenres, true),
         }, u.admin);
     }, true))
     .post('/add/song', handler((req, u) => {
         if (typeof req.body?.album !== 'string') throw 'Album expected.';
         if (typeof req.body?.name !== 'string' || !req.body.name.trim()) throw 'Name expected.';
-        if (!Array.isArray(req.body.genres) || !(req.body.genres as string[]).filter(x => x.trim()).length) throw 'Genres expected.';
+        if (!checkStringArray(req.body?.genres, true)) throw 'Genres expected.';
         if (typeof req.body?.youtube !== 'string') throw 'YouTube URL or ID expected.';
         const youtube = req.body.youtube.match(/(.*youtu\.be\/|.*[?&]v=)?([^?& ]+)/)?.[2];
         if (!youtube) throw 'Invalid YouTube URL or ID.';
@@ -71,7 +72,7 @@ export default Router()
             album: req.body.album,
             name: req.body.name.trim(),
             youtube,
-            genres: trimGenres(req.body.genres),
+            genres: trimArray(req.body.genres, true),
         }, u.admin);
     }, true))
     .post('/add/solo', handler(async (req, u) => {
@@ -79,12 +80,14 @@ export default Router()
         if (!checkInt(req.body?.start)) throw 'Start expected to be a nonnegative integer.';
         if (!checkInt(req.body?.end)) throw 'End expected to be a nonnegative integer.';
         if (req.body.start >= req.body.end) throw 'End is expected to be greater than start.';
-        if (!Array.isArray(req.body?.guitarists)) throw 'Guitarists expected.';
+        if (!checkStringArray(req.body?.guitarists)) throw 'Guitarists expected.';
+        if (!checkStringArray(req.body?.tags)) throw 'Tags expected.';
         await db.addSolo({
             song: req.body.song,
             start: req.body.start,
             end: req.body.end,
-            guitarists: (req.body.guitarists as string[]).map(x => x.trim()).filter(x => x),
+            guitarists: trimArray(req.body.guitarists),
+            tags: trimArray(req.body.tags, true),
         }, u.admin);
     }, true))
     .get('/get/album', handler(async req => {

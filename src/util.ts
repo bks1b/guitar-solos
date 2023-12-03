@@ -2,6 +2,7 @@ export const loadFilters = (params: Record<string, string>): Filters => ([
     ['artists', x => [x[2].artist], false],
     ['guitarists', x => x[0].guitarists, true],
     ['genres', x => x[1].genres, true],
+    ['tags', x => x[0].tags, true],
     ['years', x => [x[2].year + ''], false],
     ['albums', x => [x[2].id], false],
 ] as [string, (x: Solos[number]) => string[], boolean][]).map(x => [...x, params[x[0]]?.toLowerCase().split(';') || [], params[x[0] + '_mode'] === 'all']);
@@ -50,6 +51,7 @@ export type Solo = {
     start: number;
     end: number;
     guitarists: string[];
+    tags: string[];
     unverified?: boolean;
 };
 
