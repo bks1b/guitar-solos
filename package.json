@@ -8,6 +8,8 @@
     "lint": "eslint src --fix"
   },
   "dependencies": {
+    "chart.js": "^4.4.0",
+    "chartjs-plugin-zoom": "^2.0.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jszip": "^3.10.1",

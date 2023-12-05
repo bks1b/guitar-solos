@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import JSZip from 'jszip';
 import Ratings from '../components/Ratings';
-import { getTimestamp, MainContext, onClick, resolveParams, updateParams } from '../util';
+import { getTimestamp, MainContext, noSolos, onClick, resolveParams, updateParams } from '../util';
 import { Filter, Sort, getFilterReducer, getSortReducer } from '../components/Filters';
 import { Solos, applyFilters } from '../../util';
 import List from '../components/List';
@@ -124,7 +124,7 @@ export default ({ tierlist = false }: { tierlist?: boolean; }) => {
                         }
                     </div>
                 </div>)}/>
-                : <h2>No matching solos found.</h2>
+                : noSolos
         }
     </>;
 };

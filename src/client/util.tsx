@@ -36,8 +36,10 @@ export const getSecs = (m: RefObject<HTMLInputElement>, s: RefObject<HTMLInputEl
     if (+s.current!.value > 59) throw 'Seconds expected to be between 0 and 59 (inclusive).';
     return +m.current!.value * 60 + +s.current!.value;
 };
+export const parseTimestamp = (s: string) => s.split(':').reduce((a, b, i) => a + +b * 60 ** (1 - i), 0);
 export const getTimestamp = (s: number) => `${Math.floor(s / 60)}:${(s % 60 + '').padStart(2, '0')}`;
 
+export const noSolos = <h2>No solos match the given filters.</h2>;
 export const genius = <a href='https://genius.com/' target='_blank'>Genius</a>;
 
 type Ctx = {

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import Albums from '../components/Albums';
-import { MainContext, StatsType, resolveParams, updateParams } from '../util';
+import { MainContext, StatsType, noSolos, resolveParams, updateParams } from '../util';
 import { Filter, Sort, getFilterReducer, getSortReducer } from '../components/Filters';
 import RatingStats, { getStatSortReducer } from '../components/Stats';
 import { Solos, applyFilters } from '../../util';
@@ -46,7 +46,7 @@ export default ({ name }: { name: string; }) => {
                                 {
                                     arr.length
                                         ? <List length={arr.length} step={STEP} center render={c => <Albums arr={arr.slice(0, c)} navigateArtist={a => m => m ? window.open(resolveParams(filterState.getParams(0, a))) : filterDispatch(['filter', 0, [a], true])} ratings ts/>}/>
-                                        : <h2>No matching solos found.</h2>
+                                        : noSolos
                                 }
                             </>
                     }
