@@ -1,5 +1,5 @@
 import { Dispatch, Fragment, useContext, useEffect, useReducer, useState } from 'react';
-import { MainContext, StatsType, getTimestamp, orderBy, toFixed } from '../util';
+import { MainContext, StatsType, getTimestamp, noSolos, orderBy, toFixed } from '../util';
 import List from './List';
 import { FilterState } from './Filters';
 
@@ -33,7 +33,7 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
         return () => clearTimeout(timeout);
     }, [filterState]);
     if (!data) return <></>;
-    if (!data.total[1]) return <h2>No solos match the given filters.</h2>;
+    if (!data.total[1]) return noSolos;
     const total = data.ratings.reduce((a, b) => a + b[1], 0);
     return <div>
         <a>Total:</a>

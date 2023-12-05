@@ -9,10 +9,10 @@ import Discover from './views/Discover';
 import Profile from './views/Profile';
 import Search from './views/Search';
 import Song from './views/Song';
-import Info from './views/Info';
 import Admin from './views/Admin';
 import Guide from './views/Guide';
 import Auth from './components/Auth';
+import StatsPage from './views/StatsPage';
 
 let id = Date.now();
 let lastSidebar = !isMobile;
@@ -132,7 +132,7 @@ const App = () => {
                             ? path[0] === 'discover' && user.loggedIn
                                 ? <Discover/>
                                 : path[0] === 'stats'
-                                    ? <Info/>
+                                    ? <StatsPage/>
                                     : path[0] === 'guide'
                                         ? <Guide/>
                                         : path[0] === 'tierlist'

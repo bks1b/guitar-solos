@@ -1,4 +1,5 @@
 import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
+import fetch from 'node-fetch';
 import { compareTwoStrings } from 'string-similarity';
 import { Album, Auth, ExtendedAuth, Rating, Solo, Solos, Song, User, applyFilters, loadFilters } from '../util';
 import { getScore, hash } from './util';
@@ -84,13 +85,22 @@ export default class {
         return { id };
     }
     
-    async addSong(data: Omit<Song, 'id' | 'lowerName'>, admin?: boolean) {
+    async addSong(data: Omit<Song, 'id' | 'lowerName' | 'duration'>, admin?: boolean) {
         const coll = (await this.db).collection<Song>('songs');
         if (await coll.findOne({ lowerName: data.name.toLowerCase(), album: data.album })) throw 'This song is already listed on the album.';
         if (!await (await this.db).collection<Album>('albums').findOne({ id: data.album })) throw 'Album not found.';
+        const res = await fetch(`https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&id=${data.youtube}&key=${process.env.YOUTUBE_KEY}`, {
+            headers: { accept: 'application/json' },
+        }).then(d => d.json());
+        if (!res.error && !res.items.length) throw 'YouTube video not found.';
         const id = await this.getNewID('songs');
         if (!admin) data.unverified = true;
-        await coll.insertOne({ ...data, id, lowerName: data.name.toLowerCase() });
+        await coll.insertOne({
+            ...data,
+            id,
+            lowerName: data.name.toLowerCase(),
+            duration: res.error ? 0 : [...res.items[0].contentDetails.duration.matchAll(/(\d+)([HMS])/g)].reduce((a, b) => a + b[1] * 60 ** 'SMH'.indexOf(b[2]), 0),
+        });
         return { id };
     }
 

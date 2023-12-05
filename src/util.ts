@@ -43,6 +43,7 @@ export type Song = {
     lowerName: string;
     genres: string[];
     youtube: string;
+    duration: number;
     unverified?: boolean;
 };
 export type Solo = {

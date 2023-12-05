@@ -2,7 +2,7 @@ import { RefObject, useContext, useEffect, useRef, useState } from 'react';
 import { Album, Solo, Solos, Song } from '../../util';
 import Albums from '../components/Albums';
 import Ratings from '../components/Ratings';
-import { enterKeydown, getSecs, getTimestamp, MainContext } from '../util';
+import { enterKeydown, getSecs, getTimestamp, MainContext, parseTimestamp } from '../util';
 import LinkList from '../components/LinkList';
 import AuthText from '../components/AuthText';
 
@@ -89,13 +89,14 @@ export default ({ id }: { id: string; }) => {
                         <textarea defaultValue={JSON.stringify({
                             name: song[0].name,
                             youtube: song[0].youtube,
+                            duration: getTimestamp(song[0].duration),
                             genres: song[0].genres,
                         }, undefined, 4)} ref={edit}/>
                         <br/>
                         <div className='row'>
                             <button onClick={() => {
                                 const d = JSON.parse(edit.current!.value);
-                                request('/admin/edit', { entry: ['songs', song[0].id], data: { ...d, lowerName: d.name.toLowerCase() } }, () => setReload(reload + 1));
+                                request('/admin/edit', { entry: ['songs', song[0].id], data: { ...d, duration: parseTimestamp(d.duration), lowerName: d.name.toLowerCase() } }, () => setReload(reload + 1));
                             }}>Edit</button>
                             <button onClick={() => confirm('Are you sure?') && request('/admin/delete/song', { id: song[0].id }, () => setReload(reload + 1))}>Delete</button>
                             {
@@ -128,10 +129,10 @@ export default ({ id }: { id: string; }) => {
                                             {
                                                 admin
                                                     ? <div className='row'>
-                                                        <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(t => getTimestamp(t).split(':').map(n => +n)), x[0].tags, x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
+                                                        <input defaultValue={JSON.stringify([...[x[0].start, x[0].end].map(getTimestamp), x[0].tags, x[0].guitarists])} className='soloInput' ref={e => solos[x[0].id] = e!}/>
                                                         <button onClick={() => {
                                                             const d = JSON.parse(solos[x[0].id].value);
-                                                            request('/admin/edit', { entry: ['solos', x[0].id], data: { start: d[0][0] * 60 + d[0][1], end: d[1][0] * 60 + d[1][1], tags: d[2], guitarists: d[3] } }, () => setReload(reload + 1));
+                                                            request('/admin/edit', { entry: ['solos', x[0].id], data: { start: parseTimestamp(d[0]), end: parseTimestamp(d[1]), tags: d[2], guitarists: d[3] } }, () => setReload(reload + 1));
                                                         }}>Edit</button>
                                                         <button onClick={() => confirm('Are you sure?') && request('/admin/delete/solo', { id: x[0].id }, () => setReload(reload + 1))}>Delete</button>
                                                         {

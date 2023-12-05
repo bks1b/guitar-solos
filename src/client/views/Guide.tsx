@@ -69,5 +69,6 @@ export default () => {
         <ul>
             <li>You can use <a className='link underline' {...navigateOnClick(['tierlist'])}>this page</a> to generate images from a given list of solos, which can be used for tier lists.</li>
         </ul>
+        <div>This project is <a href='https://github.com/bks1b/guitar-solos' target='_blank'>open source.</a></div>
     </>;
 };
