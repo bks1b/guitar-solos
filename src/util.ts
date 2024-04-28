@@ -34,6 +34,7 @@ export type Album = {
     defaultGenres: string[];
     year: number;
     cover: string;
+    complete?: { [k in 'album' | 'bonus']?: boolean; };
     unverified?: boolean;
 };
 export type Song = {

@@ -1,5 +1,6 @@
 import { Dispatch, Fragment, useContext, useEffect, useReducer, useState } from 'react';
-import { MainContext, StatsType, getTimestamp, noSolos, orderBy, toFixed } from '../util';
+import { MainContext, StatsType, completeKeys, getTimestamp, noSolos, orderBy, toFixed } from '../util';
+import { Album } from '../../util';
 import List from './List';
 import { FilterState } from './Filters';
 
@@ -23,8 +24,9 @@ export const getStatSortReducer = () => {
 };
 
 export default ({ requestData, filterState, sortState, sortDispatch, path = [], profile = false }: { requestData: [string, any]; filterState: FilterState; sortState: State; sortDispatch: Dispatch<Action>; path?: string[]; profile?: boolean; }) => {
-    const { request, navigateOnClick } = useContext(MainContext)!;
+    const { request, navigateOnClick, admin } = useContext(MainContext)!;
     const [data, setData] = useState<StatsType>();
+    const [albumFilters, setAlbumFilters] = useState<boolean[][]>(completeKeys.map(() => [true, true]));
     useEffect(() => {
         const timeout = setTimeout(() => {
             const params = filterState.getParams();
@@ -35,6 +37,7 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
     if (!data) return <></>;
     if (!data.total[1]) return noSolos;
     const total = data.ratings.reduce((a, b) => a + b[1], 0);
+    const filterAlbums = albumFilters.some(a => a.some(x => !x));
     return <div>
         <a>Total:</a>
         <ul>{['user', ...totalKeys].map((x, i) => !profile || i ? <li key={i}>{data.total[i]} {x}s</li> : '')}</ul>
@@ -46,6 +49,12 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
         <a>Average solo duration: {getTimestamp(Math.round(data.averageDuration))}</a>
         <br/>
         <a>Average rating: {toFixed(data.ratings.reduce((a, b) => a + b[0] * b[1], 0) / total)}/10</a>
+        <br/>
+        <a>Albums:</a>
+        <ul>{['', ' without bonus tracks'].map((s, i) => {
+            const n = data.albums.filter(x => x[0].complete?.album && (i || x[0].complete?.bonus)).length;
+            return <li key={i}>{n} albums complete{s} ({toFixed(n / data.albums.length * 100)}%)</li>;
+        })}</ul>
         <table>
             <thead><tr>
                 <th>Rating</th>
@@ -71,6 +80,11 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
                     <a>{x[1]} songs, {x[2]} solos</a>
                     <br/>
                     <a>{toFixed(x[4])}/10 average rating{profile ? '' : `, ${x[5]} total ratings`}</a>
+                    {
+                        filterAlbums && completeKeys.some(k => !x[0].complete?.[k])
+                            ? <div>Missing {completeKeys.filter(k => !x[0].complete?.[k]).map(k => `"${k}"`).join(', ')}</div>
+                            : ''
+                    }
                 </div>
             </div>,
             ...(['artists', 'years', 'guitarists', 'genres', 'tags'] as const).map((k, j) => (x: StatsType[typeof k][number], i: number) => <div key={i}>
@@ -85,7 +99,9 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
                 </ul>
             </div>),
         ].map((f, i) => {
-            const arr = [...data[statKeys[i][0]]].sort((a, b) => b[3] - a[3]);
+            const arr = [...data[statKeys[i][0]]]
+                .filter(x => i || !filterAlbums || completeKeys.every((k, j) => albumFilters[j][+!(x[0] as Album).complete?.[k]]))
+                .sort((a, b) => b[3] - a[3]);
             if (sortState.keys[i][0]) arr.sort((a, b) => (g => g(b) - g(a))((x: typeof a) => [x[5] / x[2], x[2], x[1], x[6]!][sortState.keys[i][0] - 1]));
             if (!sortState.keys[i][1]) arr.reverse();
             return <Fragment key={i}>
@@ -93,9 +109,17 @@ export default ({ requestData, filterState, sortState, sortDispatch, path = [], 
                 <a>Sort by: </a>
                 {[statKeys[i][1], orderBy].map((a, j) => <Fragment key={j}>
                     {j ? <a> </a> : ''}
-                    <select defaultValue={sortState.keys[i][j]} onChange={e => sortDispatch([i, j, +e.target.selectedOptions[0].value])}>{a.map((x, k) => !profile || x !== 'popularity' ? <option key={k} value={k}>{x}</option> : '')}</select>
+                    <select defaultValue={sortState.keys[i][j]} onChange={e => sortDispatch([i, j, +e.target.selectedOptions[0].value])}>{
+                        a.map((x, k) => !profile || x !== 'popularity' ? <option key={k} value={k}>{x}</option> : '')
+                    }</select>
                 </Fragment>)}
-                <List length={arr.length} step={STEP} render={c => arr.slice(0, c).map((x, i) => f(x as any, i))}/>
+                {admin && !i && !profile ? completeKeys.map((c, j) => <div key={j}>{c}: {
+                    ['complete', 'incomplete'].map((s, k) => <label key={k} className='tagLabel'>{s} <input type='checkbox' defaultChecked={albumFilters[j][k]} onChange={e => {
+                        albumFilters[j][k] = e.target.checked;
+                        setAlbumFilters([...albumFilters]);
+                    }}/></label>)
+                }</div>) : ''}
+                <List length={arr.length} step={STEP} render={c => arr.slice(0, c).map((x, j) => f(x as any, j))}/>
             </Fragment>;
         })}
     </div>;

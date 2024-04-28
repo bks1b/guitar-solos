@@ -3,6 +3,7 @@ import { Album, Auth, User } from '../util';
 
 export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export const orderBy = ['ascending', 'descending'];
+export const completeKeys = ['album', 'bonus'] as const;
 
 export const MainContext = createContext<Ctx | null>(null);
 

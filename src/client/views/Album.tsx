@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Album, Song } from '../../util';
-import { MainContext, enterKeydown, toFixed } from '../util';
+import { MainContext, completeKeys, enterKeydown, toFixed } from '../util';
 import AuthText from '../components/AuthText';
 
 export default ({ id }: { id: string; }) => {
@@ -46,11 +46,22 @@ export default ({ id }: { id: string; }) => {
             {
                 admin
                     ? <>
-                        <textarea defaultValue={JSON.stringify(Object.fromEntries((['name', 'artist', 'year', 'cover', 'defaultGenres'] as const).map(k => [k, album[0][k]])), undefined, 4)} ref={edit}/>
+                        <textarea defaultValue={JSON.stringify(Object.fromEntries([
+                            ...(['name', 'artist', 'year', 'cover', 'defaultGenres'] as const).map(k => [k, album[0][k]]),
+                            ['complete', Object.fromEntries(completeKeys.map(k => [k, !!album[0].complete?.[k]]))],
+                        ]), undefined, 4)} ref={edit}/>
                         <div className='row'>
                             <button onClick={() => {
                                 const d = JSON.parse(edit.current!.value);
-                                request('/admin/edit', { entry: ['albums', album[0].id], data: { ...d, lowerName: d.name.toLowerCase(), lowerArtist: d.artist.toLowerCase() } }, () => setReload(reload + 1));
+                                request('/admin/edit', {
+                                    entry: ['albums', album[0].id],
+                                    data: {
+                                        ...d,
+                                        lowerName: d.name.toLowerCase(),
+                                        lowerArtist: d.artist.toLowerCase(),
+                                        complete: album[0].complete || Object.values(d.complete).some(x => x) ? Object.fromEntries(Object.entries(d.complete).filter(x => x[1])) : undefined,
+                                    },
+                                }, () => setReload(reload + 1));
                             }}>Edit</button>
                             <button onClick={() => confirm('Are you sure?') && request('/admin/delete/album', { id: album[0].id }, () => setReload(reload + 1))}>Delete</button>
                             {
