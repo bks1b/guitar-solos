@@ -10,7 +10,7 @@ Chart.register(zoomPlugin);
 
 const TIMEOUT = 500;
 
-const Graph = ({ arr }: { arr: [string, number][]; }) => {
+const Graph = ({ arr, points }: { arr: [string, number][]; points?: boolean; }) => {
     const [first, setFirst] = useState(true);
     const canvas = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
@@ -20,7 +20,7 @@ const Graph = ({ arr }: { arr: [string, number][]; }) => {
             type: 'line',
             data: {
                 labels: arr.map(x => x[0]),
-                datasets: [{ data: arr.map(x => x[1]), fill: true }],
+                datasets: [{ data: arr.map(x => x[1]), fill: true, pointRadius: points ? undefined : 0 }],
             },
             options: {
                 scales: {
@@ -63,7 +63,7 @@ const Graphs = ({ arr }: { arr: Solos; }) => {
     const minYear = Math.min(...years);
     return <>
         <h1>Number of solos per year</h1>
-        <Graph arr={Array.from({ length: Math.max(...years) - minYear + 1 }, (_, i) => [minYear + i + '', arr.filter(x => x[2].year === minYear + i).length])}/>
+        <Graph arr={Array.from({ length: Math.max(...years) - minYear + 1 }, (_, i) => [minYear + i + '', arr.filter(x => x[2].year === minYear + i).length])} points/>
         <h1>Timeline of all solos played together</h1>
         <Graph arr={Array.from({ length: Math.max(...arr.map(x => x[0].end)) + 1 }, (_, i) => [getTimestamp(i), arr.filter(x => i >= x[0].start && i <= x[0].end).length])}/>
         <h1>Timeline of all solos played together, relative to song length</h1>
