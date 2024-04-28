@@ -135,7 +135,7 @@ export default class {
                     if (rating) {
                         count++;
                         sum += rating.rating;
-                        for (const x of u.ratings.filter(x => x.id !== s.id)) map[x.id] = (map[x.id] || 0) + x.rating * rating.rating;
+                        for (const x of u.ratings.filter(r => r.id !== s.id)) map[x.id] = (map[x.id] || 0) + x.rating * rating.rating;
                     }
                 }
                 return [s, this.resolveMap(map, 5, [albums, songs, solos, users]), sum, count, user?.ratings.find(x => x.id === s.id)?.rating];
@@ -209,7 +209,7 @@ export default class {
     async getCharts() {
         const [albums, songs, solos, users] = await this.getCollections(true, true);
         return solos.map(s => {
-            const ratings = users.map(x => x.ratings.find(x => x.id === s.id)).filter(x => x);
+            const ratings = users.map(x => x.ratings.find(r => r.id === s.id)).filter(x => x);
             const song = songs.find(x => x.id === s.song)!;
             return [s, song, albums.find(x => x.id === song.album), ratings.reduce((a, b) => a + b!.rating, 0), ratings.length];
         });

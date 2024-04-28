@@ -44,12 +44,12 @@ export const Sort = ({ state, dispatch }: { state: SortState; dispatch: Dispatch
     <a>Sort by: </a>
     {([['sort', state.arr], ['order', orderBy]] as ['sort' | 'order', string[]][]).map((x, i) => <Fragment key={i}>
         {i ? <a> </a> : ''}
-        <select defaultValue={state[x[0]]} onChange={e => dispatch([x[0], e.target.selectedIndex])}>{x[1].map((x, i) => <option key={i} value={i}>{x}</option>)}</select>
+        <select defaultValue={state[x[0]]} onChange={e => dispatch([x[0], e.target.selectedIndex])}>{x[1].map((s, j) => <option key={j} value={j}>{s}</option>)}</select>
     </Fragment>)}
 </div>;
 export const Filter = ({ state, dispatch }: { state: FilterState; dispatch: Dispatch<FilterAction>; }) => <div>{state.arr.map((x, i) => <Fragment key={i}>
     {i ? <br/> : ''}
-    <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[3].join('; ')} key={state.forced} onInput={e => dispatch(['filter', i, (e.target as HTMLInputElement).value.toLowerCase().split(';').map(x => x.trim()).filter(x => x)])}/></label>
+    <label>Filter by {x[0]}: <input placeholder='Separated by ;' defaultValue={x[3].join('; ')} key={state.forced} onInput={e => dispatch(['filter', i, (e.target as HTMLInputElement).value.toLowerCase().split(';').map(s => s.trim()).filter(s => s)])}/></label>
     {' '}{x[2] ? <select defaultValue={x[4] ? 'all' : 'any'} onChange={e => dispatch(['filterMode', i, !!e.target.selectedIndex])}><option>any</option><option>all</option></select> : ''}
 </Fragment>)}</div>;
 

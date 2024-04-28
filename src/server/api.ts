@@ -25,7 +25,7 @@ const getUser = async (auth: Auth) => {
 };
 const filterUser = async (p: Promise<User | null>) => ({ ...await p, password: undefined, ratings: undefined });
 
-const handler = (fn: (req: Request, u: User) => any, u?: boolean): RequestHandler => async (req, res) => {
+const handler = (fn: (req: Request, d: User) => any, u?: boolean): RequestHandler => async (req, res) => {
     try {
         res.json(await fn(req, u ? await getUser(getHeader(req)) : undefined!) || {});
     } catch (e) {
