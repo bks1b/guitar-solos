@@ -125,7 +125,7 @@ export default ({ id }: { id: string; }) => {
                                         ? <>
                                             <label>Own rating: <input type='number' min={0} max={10} defaultValue={x[4]} ref={e => ratings[x[0].id] = e!} {...enterKeydown(rate(x))} className='num'/>/10</label>
                                             <button className='rate' onClick={rate(x)}>Rate</button>
-                                            {Number.isInteger(x[4]) ? <> <button onClick={() => request('/unrate', { id: x[0].id }, () => setReload(reload + 1))}>Unrate</button></> : ''}
+                                            {Number.isInteger(x[4]) ? <> <button onClick={() => request('/rate', { id: x[0].id }, () => setReload(reload + 1))}>Unrate</button></> : ''}
                                             {
                                                 admin
                                                     ? <div className='row'>

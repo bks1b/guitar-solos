@@ -32,7 +32,7 @@ express()
         let type = 'website';
         const path = (req.url.match(/^[^?]+/)?.[0] || '/').split('/').slice(1);
         if (path[0] === 'album') {
-            const album = await (await db.db).collection<Album>('albums').findOne({ id: path[1] });
+            const album = await db.db.get<Album>('albums', { id: path[1] });
             if (album) {
                 title = `${album.name} - ${album.artist}`;
                 desc = `View the album "${album.name}" by "${album.artist}", released in ${album.year}.`;
@@ -40,16 +40,16 @@ express()
                 type = 'music:album';
             }
         } else if (path[0] === 'song') {
-            const song = await (await db.db).collection<Song>('songs').findOne({ id: path[1] });
+            const song = await db.db.get<Song>('songs', { id: path[1] });
             if (song) {
-                const album = (await (await db.db).collection<Album>('albums').findOne({ id: song.album }))!;
+                const album = await db.db.get<Album>('albums', { id: song.album });
                 title = `${song.name} - ${album.artist}`;
                 desc = `View the song "${song.name}" by "${album.artist}" on the album "${album.name}".`;
                 if (!album.cover.startsWith('/')) image = album.cover;
                 type = 'music:song';
             }
         } else if (path[0] === 'profile') {
-            const profile = await (await db.db).collection<User>('users').findOne({ lowerName: path[1].toLowerCase() });
+            const profile = await db.db.get<User>('users', { lowerName: path[1].toLowerCase() });
             if (profile) {
                 title = profile.name;
                 desc = `View ${title}'s ratings and stats.`;

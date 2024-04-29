@@ -29,6 +29,7 @@ const handler = (fn: (req: Request, d: User) => any, u?: boolean): RequestHandle
     try {
         res.json(await fn(req, u ? await getUser(getHeader(req)) : undefined!) || {});
     } catch (e) {
+        console.error(e);
         res.json({ error: e + '' });
     }
 };
@@ -45,7 +46,7 @@ export default Router()
     .post('/auth/settings', handler(async req => {
         const header = getHeader(req);
         checkAuth(req.body);
-        await db.editUser(header, { $set: await db.getCredentials(req.body, req.body[0] !== header[0]) });
+        await db.editUser(header, await db.getCredentials(req.body, req.body[0] !== header[0]));
         return filterUser(db.getUser(req.body[0]));
     }))
     .post('/add/album', handler((req, u) => {
@@ -100,20 +101,20 @@ export default Router()
     }))
     .post('/rate', handler(async (req, u) => {
         if (typeof req.body?.id !== 'string') throw 'ID expected.';
-        if (!checkInt(req.body?.rating) || req.body.rating > 10) throw 'Rating expected to be an integer between 0 and 10 (inclusive).';
-        if (!await (await db.db).collection<Solo>('solos').findOne({ id: req.body.id })) throw 'Solo not found.';
-        await db.editUser(getHeader(req), { $set: { ratings: [...u.ratings.filter(x => x.id !== req.body.id), { id: req.body.id, rating: req.body.rating }] } });
-    }, true))
-    .post('/unrate', handler(async (req, u) => {
-        if (typeof req.body?.id !== 'string') throw 'ID expected.';
-        if (!await (await db.db).collection<Solo>('solos').findOne({ id: req.body.id })) throw 'Solo not found.';
-        await db.editUser(getHeader(req), { $set: { ratings: u.ratings.filter(x => x.id !== req.body.id) } });
+        if ('rating' in req.body && (!checkInt(req.body.rating) || req.body.rating > 10)) throw 'Rating expected to be an integer between 0 and 10 (inclusive).';
+        if (!await db.db.get('solos', { id: req.body.id })) throw 'Solo not found.';
+        await db.editUser(getHeader(req), {
+            ratings: [
+                ...u.ratings.filter(x => x.id !== req.body.id),
+                ...'rating' in req.body ? [{ id: req.body.id, rating: req.body.rating }] : [],
+            ],
+        });
     }, true))
     .get('/discover', handler((_, u) => db.discover(u), true))
     .get('/random/:type', handler(async req => {
         if (!['album', 'song', 'solo'].includes(req.params.type)) throw 'Type expected to be album, song or solo.';
-        const id = (Math.floor(Math.random() * (await (await db.db).collection('data').findOne({}))![req.params.type + 's']) + 1).toString(16);
-        return req.params.type === 'solo' ? { id: (await (await db.db).collection('solos').findOne({ id }))!.song, solo: id } : { id };
+        const id = (Math.floor(Math.random() * (await db.db.get<any>('data'))[0][req.params.type + 's']) + 1).toString(16);
+        return req.params.type === 'solo' ? { id: (await db.db.get<Solo>('solos', { id })).song, solo: id } : { id };
     }))
     .post('/profile', handler(async req => {
         if (typeof req.body?.name !== 'string') throw 'Name expected.';
@@ -139,7 +140,7 @@ export default Router()
         ])),
     ))
     .post('/admin/backup', handler((_, u) => {
-        if (u.admin) return db.getBackup();
+        if (u.admin) return db.db.collections;
     }, true))
     .post('/admin/data', handler((_, u) => {
         if (u.admin) return db.getAdminData();

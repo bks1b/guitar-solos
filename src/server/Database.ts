@@ -1,28 +1,16 @@
-import { Db, MongoClient, UpdateFilter, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import { compareTwoStrings } from 'string-similarity';
 import { Album, Auth, ExtendedAuth, Rating, Solo, Solos, Song, User, applyFilters, loadFilters } from '../util';
 import { getScore, hash } from './util';
+import DatabaseHandler from './DatabaseHandler';
 
 export default class {
-    db: Promise<Db>;
-    constructor() {
-        const client = new MongoClient(process.env.MONGO_URI!);
-        this.db = client.connect().then(() => client.db('song_list'));
-    }
+    db = new DatabaseHandler();
 
-    private async getNewID(key: keyof Data) {
-        const data = (await this.db).collection<Data>('data');
-        const count = (await data.findOne({}))![key] + 1;
-        await data.updateOne({}, { $set: { [key]: count } });
-        return count.toString(16);
-    }
-
-    private async getLatestID(key: keyof Data) {
-        const data = (await this.db).collection<Data>('data');
-        const count = (await data.findOne({}))![key];
-        await data.updateOne({}, { $set: { [key]: count - 1 } });
-        return count.toString(16);
+    private async getID(key: keyof Data, del = false) {
+        const count = (await this.db.get<Data>('data'))![0][key];
+        await this.db.set('data', {}, { [key]: count + (del ? -1 : 1) });
+        return (count + (del ? 0 : 1)).toString(16);
     }
 
     private resolveMap(map: Record<string, number>, max: number, data: Collections) {
@@ -33,12 +21,16 @@ export default class {
             .map(x => this.getSolo(x[0], data));
     }
 
-    getCollections(solos = false, users = false) {
-        return <Promise<Collections>>Promise.all(['albums', 'songs', 'solos', 'users'].map(async (x, i) => [true, true, solos, users][i] ? (await this.db).collection(x).find().toArray() : []));
+    private async getRatedUsers(id: string) {
+        return (await this.db.get<User>('users')).filter(x => x.ratings.some(r => r.id === id));
     }
 
-    async getPublicUsers() {
-        return (await this.db).collection<User>('users').find({ public: true }).toArray();
+    getCollections() {
+        return <Promise<Collections>>Promise.all(['albums', 'songs', 'solos', 'users'].map(x => this.db.get(x)));
+    }
+
+    getPublicUsers() {
+        return this.db.get<User>('users', { public: true }, true);
     }
 
     async getCredentials(auth: ExtendedAuth, checkTaken = true) {
@@ -57,45 +49,39 @@ export default class {
         };
     }
 
-    async getBackup() {
-        return Object.fromEntries(await Promise.all((await (await this.db).collections()).map(async x => [x.collectionName, await x.find().toArray()])));
-    }
-
-    async getUser(name: string) {
-        return (await this.db).collection<User>('users').findOne({ lowerName: name.toLowerCase() });
+    getUser(name: string) {
+        return this.db.get<User>('users', { lowerName: name.toLowerCase() });
     }
 
     async addUser(auth: ExtendedAuth) {
         const obj = { ...await this.getCredentials(auth), ratings: [] };
-        await (await this.db).collection<User>('users').insertOne(obj);
+        await this.db.add('users', obj);
         return obj;
     }
 
-    async editUser(auth: Auth, filter: UpdateFilter<User>) {
-        return (await this.db).collection<User>('users').updateOne({ lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, filter);
+    editUser(auth: Auth, d: any) {
+        return this.db.set('users', { lowerName: auth[0].toLowerCase(), password: hash(auth[1]) }, d);
     }
 
     async addAlbum(data: Omit<Album, 'id' | 'lowerName' | 'lowerArtist'>, admin?: boolean) {
         const lower = { lowerName: data.name.toLowerCase(), lowerArtist: data.artist.toLowerCase() };
-        const coll = (await this.db).collection<Album>('albums');
-        if (await coll.findOne(lower)) throw 'This album is already listed.';
-        const id = await this.getNewID('albums');
+        if (await this.db.get('albums', lower)) throw 'This album is already listed.';
+        const id = await this.getID('albums');
         if (!admin) data.unverified = true;
-        await coll.insertOne({ ...data, id, ...lower });
+        await this.db.add('albums', { ...data, id, ...lower });
         return { id };
     }
     
     async addSong(data: Omit<Song, 'id' | 'lowerName' | 'duration'>, admin?: boolean) {
-        const coll = (await this.db).collection<Song>('songs');
-        if (await coll.findOne({ lowerName: data.name.toLowerCase(), album: data.album })) throw 'This song is already listed on the album.';
-        if (!await (await this.db).collection<Album>('albums').findOne({ id: data.album })) throw 'Album not found.';
+        if (await this.db.get('songs', { lowerName: data.name.toLowerCase(), album: data.album })) throw 'This song is already listed on the album.';
+        if (!await this.db.get('albums', { id: data.album })) throw 'Album not found.';
         const res = await fetch(`https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&id=${data.youtube}&key=${process.env.YOUTUBE_KEY}`, {
             headers: { accept: 'application/json' },
         }).then(d => d.json());
         if (!res.error && !res.items.length) throw 'YouTube video not found.';
-        const id = await this.getNewID('songs');
+        const id = await this.getID('songs');
         if (!admin) data.unverified = true;
-        await coll.insertOne({
+        await this.db.add('songs', {
             ...data,
             id,
             lowerName: data.name.toLowerCase(),
@@ -105,22 +91,22 @@ export default class {
     }
 
     async addSolo(data: Omit<Solo, 'id'>, admin?: boolean) {
-        if (!await (await this.db).collection<Song>('songs').findOne({ id: data.song })) throw 'Song not found.';
+        if (!await this.db.get('songs', { id: data.song })) throw 'Song not found.';
         if (!admin) data.unverified = true;
-        return (await this.db).collection<Solo>('solos').insertOne({ ...data, id: await this.getNewID('solos') });
+        return this.db.add('solos', { ...data, id: await this.getID('solos') });
     }
 
     async getAlbum(id: string) {
-        const album = await (await this.db).collection<Album>('albums').findOne({ id });
+        const album = await this.db.get<Album>('albums', { id });
         if (!album) throw 'Album not found.';
-        const songs = await (await this.db).collection<Song>('songs').find({ album: id }).toArray();
-        const solos = await (await this.db).collection<Solo>('solos').find({ song: { $in: songs.map(x => x.id) } }).toArray();
-        const ratings = (await (await this.db).collection<User>('users').find().toArray()).flatMap(u => u.ratings.filter(x => solos.some(s => s.id === x.id)));
+        const songs = await this.db.get<Song>('songs', { album: id }, true);
+        const solos = (await this.db.get<Solo>('solos')).filter(x => songs.some(s => x.song === s.id));
+        const ratings = (await this.db.get<User>('users')).flatMap(u => u.ratings.filter(x => solos.some(s => s.id === x.id)));
         return [album, songs, solos.length, ratings.reduce((a, b) => a + b.rating, 0) / ratings.length, ratings.length];
     }
 
     async getSong(id: string, user?: User) {
-        const [albums, songs, solos, users] = await this.getCollections(true, true);
+        const [albums, songs, solos, users] = await this.getCollections();
         const song = songs.find(x => x.id === id);
         if (!song) throw 'Song not found.';
         return [
@@ -152,19 +138,16 @@ export default class {
     async getProfile(name: string) {
         const user = await this.getUser(name);
         if (!user) throw 'User not found.';
-        const data = await this.getCollections(true);
-        return [user.name, user.description, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating])];
+        const data = await this.getCollections();
+        return [user.name, user.description, user.ratings.map(x => [...this.getSolo(x.id, data), x.rating, 0] as Solos[number])] as const;
     }
 
     async getProfileStats(name: string, params: Record<string, any>) {
-        const user = await this.getUser(name);
-        if (!user) throw 'User not found.';
-        const data = await this.getCollections(true);
-        return this.getStats(applyFilters(loadFilters(params), user.ratings.map(x => [...this.getSolo(x.id, data), x.rating, 0])), data);
+        return this.getStats(applyFilters(loadFilters(params), (await this.getProfile(name))[2]), await this.getCollections());
     }
 
     async discover(user: User) {
-        const users = (await (await this.db).collection<User>('users').find().toArray()).filter(x => x.name !== user.name);
+        const users = (await this.db.get<User>('users')).filter(x => x.name !== user.name);
         const map: Record<string, number> = {};
         for (const u of users) {
             let score = 0;
@@ -182,11 +165,11 @@ export default class {
                 map[x.id] = (map[x.id] || 0) + score / common ** 0.7 * x.rating;
             }
         }
-        return this.resolveMap(map, 50, await this.getCollections(true));
+        return this.resolveMap(map, 50, await this.getCollections());
     }
 
     async search(str: string) {
-        const [albums, songs, solos] = await this.getCollections(true);
+        const [albums, songs, solos] = await this.getCollections();
         const users = await this.getPublicUsers();
         const matches = ([albums, songs, users] as unknown as { lowerName: string; }[][]).map(arr => arr
             .map(x => [x, compareTwoStrings(str.toLowerCase(), x.lowerName)] as const)
@@ -207,7 +190,7 @@ export default class {
     }
 
     async getCharts() {
-        const [albums, songs, solos, users] = await this.getCollections(true, true);
+        const [albums, songs, solos, users] = await this.getCollections();
         return solos.map(s => {
             const ratings = users.map(x => x.ratings.find(r => r.id === s.id)).filter(x => x);
             const song = songs.find(x => x.id === s.song)!;
@@ -248,7 +231,7 @@ export default class {
             }),
         };
         return {
-            total: [users?.length, ratedSolos.length, ratedSongs.length, albumScores.length, obj.artists.length, obj.guitarists.length],
+            total: [users.length, ratedSolos.length, ratedSongs.length, albumScores.length, obj.artists.length, obj.guitarists.length],
             averageDuration: ratedSolos.reduce((a, b) => a + b[0].end - b[0].start, 0) / ratedSolos.length,
             ratings: Array.from({ length: 11 }, (_, i) => [i, ratings.filter(x => x[3] === i).length]).filter(x => x[1]),
             albums: albumScores.map(x => <const>[x[0], x[1], x[2], ...getScore(x[3])]),
@@ -257,20 +240,20 @@ export default class {
     }
 
     async getTotalStats(params: Record<string, any>) {
-        const data = await this.getCollections(true, true);
+        const data = await this.getCollections();
         return this.getStats(applyFilters(loadFilters(params), <Solos>data[3].flatMap(x => x.ratings.map(r => [...this.getSolo(r.id, data), r.rating]))), data);
     }
 
-    async edit(entry: string[], data: any) {
-        (await this.db).collection(entry[0]).updateOne({ id: entry[1] }, { $set: data });
+    edit(entry: string[], data: any) {
+        return this.db.set(entry[0], { id: entry[1] }, data);
     }
 
-    async verify(entry: string[]) {
-        (await this.db).collection(entry[0]).updateOne({ id: entry[1] }, { $unset: { unverified: '' } });
+    verify(entry: string[]) {
+        return this.db.set(entry[0], { id: entry[1] }, {}, ['unverified']);
     }
 
     async getAdminData() {
-        const [albums, songs, solos] = await this.getCollections(true);
+        const [albums, songs, solos] = await this.getCollections();
         return {
             unverified: [
                 albums.filter(x => x.unverified),
@@ -285,45 +268,37 @@ export default class {
     }
 
     async deleteAlbum(id: string) {
-        const albumsColl = (await this.db).collection('albums');
-        const songsColl = (await this.db).collection<Song>('songs');
-        const songs = await songsColl.find({ album: id }).toArray();
+        const songs = await this.db.get<Song>('songs', { album: id }, true);
         for (const s of songs) await this.deleteSong(s.id);
-        await albumsColl.deleteOne({ id });
-        const latestID = await this.getLatestID('albums');
+        await this.db.delete('albums', { id });
+        const latestID = await this.getID('albums', true);
         if (id !== latestID) {
-            await albumsColl.updateOne({ id: latestID }, { $set: { id } });
-            await songsColl.updateMany({ album: latestID }, { $set: { album: id } });
+            await this.db.set('albums', { id: latestID }, { id });
+            await this.db.set('songs', { album: latestID }, { album: id });
         }
     }
 
     async deleteSong(id: string) {
-        const songsColl = (await this.db).collection('songs');
-        const solosColl = (await this.db).collection<Solo>('solos');
-        const solos = await songsColl.find({ song: id }).toArray();
+        const solos = await this.db.get<Solo>('solos', { song: id }, true);
         for (const s of solos) await this.deleteSolo(s.id);
-        await songsColl.deleteOne({ id });
-        const latestID = await this.getLatestID('songs');
+        await this.db.delete('songs', { id });
+        const latestID = await this.getID('songs', true);
         if (id !== latestID) {
-            await songsColl.updateOne({ id: latestID }, { $set: { id } });
-            await solosColl.updateMany({ song: latestID }, { $set: { song: id } });
+            await this.db.set('songs', { id: latestID }, { id });
+            await this.db.set('solos', { song: latestID }, { song: id });
         }
     }
 
     async deleteSolo(id: string) {
-        const solosColl = (await this.db).collection('solos');
-        const usersColl = (await this.db).collection<User>('users');
-        const removeUsers = await usersColl.find({ 'ratings.id': id }).toArray();
-        for (const u of removeUsers) await usersColl.updateOne({ name: u.name }, { $set: { ratings: u.ratings.filter(r => r.id !== id) } });
-        await solosColl.deleteOne({ id });
-        const latestID = await this.getLatestID('solos');
+        for (const u of await this.getRatedUsers(id)) await this.db.set('users', { name: u.name }, { ratings: u.ratings.filter(r => r.id !== id) });
+        await this.db.delete('solos', { id });
+        const latestID = await this.getID('solos', true);
         if (id !== latestID) {
-            await solosColl.updateOne({ id: latestID }, { $set: { id } });
-            const replaceUsers = await usersColl.find({ 'ratings.id': latestID }).toArray();
-            for (const u of replaceUsers) await usersColl.updateOne({ name: u.name }, { $set: { ratings: u.ratings.map(r => r.id === latestID ? { ...r, id } : r) } });
+            await this.db.set('solos', { id: latestID }, { id });
+            for (const u of await this.getRatedUsers(latestID)) await this.db.set('users', { name: u.name }, { ratings: u.ratings.map(r => r.id === latestID ? { ...r, id } : r) });
         }
     }
 }
 
 type Data = Record<'albums' | 'songs' | 'solos', number>;
-type Collections = [WithId<Album>[], WithId<Song>[], WithId<Solo>[], WithId<User>[]];
+type Collections = [Album[], Song[], Solo[], User[]];
