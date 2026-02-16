@@ -95,9 +95,7 @@ const App = () => {
                                 ? <Song id={path[1]}/>
                                 : path[0] === 'profile'
                                     ? <Profile name={path[1]}/>
-                                    : path[0] === 'search'
-                                        ? <Search str={path[1]}/>
-                                        : undefined
+                                    : path[0] === 'search' && <Search str={path[1]}/>
                     : path.length === 1
                         ? path[0] === 'discover' && user
                             ? <Discover/>
@@ -109,10 +107,8 @@ const App = () => {
                                         ? <Charts tierlist/>
                                         : (user ? ['settings'] : ['login', 'signup']).includes(path[0])
                                             ? <Auth type={path[0]}/>
-                                            : path[0] === 'admin' && user?.admin
-                                                ? <Admin/>
-                                                : undefined
-                        : path.length ? undefined : <Charts/>) || <h1>Page not found.</h1>
+                                            : path[0] === 'admin' && user?.admin && <Admin/>
+                        : !path.length && <Charts/>) || <h1>Page not found.</h1>
             }</div></div>
         </div>
     </MainContext.Provider>;

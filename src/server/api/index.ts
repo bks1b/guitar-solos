@@ -8,8 +8,6 @@ import get from './get';
 import post from './post';
 import admin from './admin';
 
-export const db = new Database();
-
 const GENIUS_SEARCH = 'https://genius.com/api/search/album?page=1&q=';
 const EXPIRY = '14d';
 const DISCOVER_COUNT = 50;
@@ -28,7 +26,7 @@ const setToken = (res: Response, tok: Token) => res.cookie('token', sign(tok, pr
     sameSite: 'strict',
 });
 
-export default Router()
+export default (db: Database) => Router()
     .use(async (req, res, next) => {
         if (req.cookies.token) try {
             const tok = <Token>verify(req.cookies.token, process.env.JWT_SECRET!);
