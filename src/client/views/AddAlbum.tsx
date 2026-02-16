@@ -1,13 +1,15 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { MainContext, enterKeydown } from '../util';
+import { MainContext, enterKeydown, request } from '../util';
 
 export default () => {
-    const { request, navigate } = useContext(MainContext)!;
+    const { navigate } = useContext(MainContext)!;
     const refs = ['name', 'artist', 'year', 'cover', 'defaultGenres'].map(k => [k, useRef<HTMLInputElement>(null)] as const);
     const search = useRef<HTMLInputElement>(null);
     const [results, setResults] = useState<string[][]>([]);
-    const submit = () => request<{ id: string; }>('/add/album', Object.fromEntries(refs.map((x, i) => [x[0], (v => i === 2 ? +v : i === 4 ? v.split(',') : v)(x[1].current!.value)])), d => navigate(['album', d.id]));
-    const geniusSearch = () => request<string[][]>('/genius', { query: search.current!.value }, d => setResults(d));
+    const submit = () => request<{ id: string; }>('albums', 'POST', Object.fromEntries(
+        refs.map((x, i) => [x[0], (v => i === 2 ? +v : i === 4 ? v.split(',') : v)(x[1].current!.value)]),
+    )).then(d => navigate(['album', d.id]));
+    const geniusSearch = () => request<string[][]>('genius', 'GET', { q: search.current!.value }).then(setResults);
     useEffect(() => {
         document.title = 'Add Album | Guitar Solos';
     }, []);
@@ -25,6 +27,10 @@ export default () => {
         <button onClick={submit}>Add</button>
         <hr/>
         <input ref={search} {...enterKeydown(geniusSearch)}/> <button onClick={geniusSearch}>Search on Genius</button>
-        <ul>{results.map((x, i) => <li key={i}>{x[1]} - {x[0]}{x[2] ? ` (${x[2]})` : ''} <button onClick={() => refs.forEach((r, j) => r[1].current!.value = x[j] || '')}>Load</button></li>)}</ul>
+        <ul>{results.map((x, i) => <li key={i}>
+            {x[1]} - {x[0]}
+            {x[2] ? ` (${x[2]}) ` : ' '}
+            <button onClick={() => refs.forEach((r, j) => r[1].current!.value = x[j] || '')}>Load</button>
+        </li>)}</ul>
     </>;
 };

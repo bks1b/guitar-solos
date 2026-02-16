@@ -1,7 +1,7 @@
-const { DefinePlugin } = require('webpack');
-const { join } = require('path');
+import webpack from 'webpack';
+import { join } from 'path';
 
-module.exports = [{
+export default [{
     mode: 'none',
     entry: { app: join(process.cwd(), 'src/client/index.tsx') },
     target: 'web',
@@ -17,5 +17,5 @@ module.exports = [{
         filename: '[name].js',
         path: join(process.cwd(), 'build'),
     },
-    plugins: [new DefinePlugin({ 'process.env': '({})' })],
+    plugins: [new webpack.DefinePlugin({ 'process.env': '({})' })],
 }];

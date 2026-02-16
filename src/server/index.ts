@@ -1,21 +1,21 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import express from 'express';
+import express, { ErrorRequestHandler } from 'express';
 import { config } from 'dotenv';
-
-config();
-
+import cookieParser from 'cookie-parser';
 import { Album, Song, User } from '../util';
-import api, { db } from './api';
-import { escapeQuotes } from './util';
 
-const PORT = process.env.PORT || 2000;
-const BASE_URL = process.env.BASE_URL!;
+config({ quiet: true });
+
+import api, { db } from './api';
 
 const html = readFileSync(join(process.cwd(), 'src/client/index.html'), 'utf8');
 
+const escapeQuotes = (s: string) => s.replace(/"/g, '&quot;');
+
 express()
     .use(express.json())
+    .use(cookieParser())
     .use('/api', api)
     .use(express.static(join(process.cwd(), 'build')))
     .use(express.static(join(process.cwd(), 'src/client/static')))
@@ -23,33 +23,35 @@ express()
         const [albums, songs] = await db.getCollections();
         const users = await db.getPublicUsers();
         res.setHeader('content-type', 'text/plain; charset=UTF-8');
-        res.send(['', 'add/album', 'guide', 'login', 'signup', 'settings', 'stats', 'discover', 'tierlist', ...albums.map(x => 'album/' + x.id), ...songs.map(x => 'song/' + x.id), ...users.map(x => 'profile/' + x.lowerName)].map(x => BASE_URL + x).join('\n'));
+        res.send(['', 'add/album', 'guide', 'login', 'signup', 'settings', 'stats', 'discover', 'tierlist', ...albums.map(x => 'album/' + x.id), ...songs.map(x => 'song/' + x.id), ...users.map(x => 'profile/' + x.name.toLowerCase())]
+            .map(x => process.env.BASE_URL + x)
+            .join('\n'));
     })
-    .get('*', async (req, res) => {
+    .get('{/*path}', async (req, res) => {
         let title = 'Page Not Found';
         let desc = '';
         let image = '';
         let type = 'website';
-        const path = (req.url.match(/^[^?]+/)?.[0] || '/').split('/').slice(1);
-        if (path[0] === 'album') {
-            const album = await db.db.get<Album>('albums', { id: path[1] });
+        const path = req.params.path || [];
+        if (path[0] === 'album' && path.length > 1) {
+            const album = await db.get<Album>('albums', { id: path[1] });
             if (album) {
                 title = `${album.name} - ${album.artist}`;
                 desc = `View the album "${album.name}" by "${album.artist}", released in ${album.year}.`;
                 if (!album.cover.startsWith('/')) image = album.cover;
                 type = 'music:album';
             }
-        } else if (path[0] === 'song') {
-            const song = await db.db.get<Song>('songs', { id: path[1] });
+        } else if (path[0] === 'song' && path.length > 1) {
+            const song = await db.get<Song>('songs', { id: path[1] });
             if (song) {
-                const album = await db.db.get<Album>('albums', { id: song.album });
+                const album = await db.get<Album>('albums', { id: song.album });
                 title = `${song.name} - ${album.artist}`;
                 desc = `View the song "${song.name}" by "${album.artist}" on the album "${album.name}".`;
                 if (!album.cover.startsWith('/')) image = album.cover;
                 type = 'music:song';
             }
-        } else if (path[0] === 'profile') {
-            const profile = await db.db.get<User>('users', { lowerName: path[1].toLowerCase() });
+        } else if (path[0] === 'profile' && path.length > 1) {
+            const profile = await db.get<User>('users', { name: path[1].toLowerCase() });
             if (profile) {
                 title = profile.name;
                 desc = `View ${title}'s ratings and stats.`;
@@ -85,9 +87,14 @@ express()
             <meta name="description" content="${desc}">
             <meta property="og:title" content="${escapeQuotes(title)} | Guitar Solos">
             <meta property="og:description" content="${desc}">
-            <meta property="og:url" content="${BASE_URL}${req.url}">
+            <meta property="og:url" content="${process.env.BASE_URL + req.url}">
             <meta property="og:type" content="${type}">
             ${image ? `<meta property="og:image" content="${image}">` : ''}
         `.split('\n').filter(x => x.trim()).map(x => x.slice(4)).join('\n')));
     })
-    .listen(PORT, () => console.log('Listening on port', PORT));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .use(<ErrorRequestHandler>((err, _, res, __) => {
+        console.error(err);
+        res.status(500).json({ error: err + '' });
+    }))
+    .listen(process.env.PORT, () => console.log('Listening on port', process.env.PORT));

@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { ReactElement, useState } from 'react';
 
-export default ({ length, step, center = false, render }: { length: number; step: number; center?: boolean; render: (c: number) => JSX.Element | JSX.Element[]; }) => {
-    const [count, setCount] = useState(step);
+export default (props: {
+    length: number;
+    step: number;
+    center?: boolean;
+    render: (c: number) => ReactElement | ReactElement[];
+}) => {
+    const [count, setCount] = useState(props.step);
     return <>
-        {render(count)}
-        <div className={center ? 'center' : undefined}>
-            {length > count ? <button onClick={() => setCount(count + step)} className='listBtn'>Show more</button> : ''}
-            {count > step ? <button onClick={() => setCount(count - step)} className='listBtn'>Show less</button> : ''}
+        {props.render(count)}
+        <div className={props.center ? 'center' : undefined}>
+            {props.length > count
+                ? <button onClick={() => setCount(count + props.step)} className='listBtn'>Show more</button>
+                : ''
+            }
+            {count > props.step
+                ? <button onClick={() => setCount(count - props.step)} className='listBtn'>Show less</button>
+                : ''
+            }
         </div>
     </>;
 };

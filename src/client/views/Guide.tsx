@@ -3,7 +3,7 @@ import { MainContext, genius } from '../util';
 import AuthText from '../components/AuthText';
 
 export default () => {
-    const { loggedIn, navigateOnClick } = useContext(MainContext)!;
+    const { navigateOnClick, user } = useContext(MainContext)!;
     useEffect(() => {
         document.title = 'Guide and rules | Guitar Solos';
     }, []);
@@ -35,7 +35,7 @@ export default () => {
             <li>NSFW album covers or album covers that might be considered weird must not be uploaded. Instead, the album cover URL field must be left empty.</li>
         </ul>
         <h1 className='center'>Guide</h1>
-        {loggedIn ? '' : <AuthText text='add albums/songs/solos and rate solos'/>}
+        {user ? '' : <AuthText text='add albums/songs/solos and rate solos'/>}
         <a>Before adding an album/song/solo, use the search feature on the top to see if it has been added.</a>
         <h2>Adding solos</h2>
         <ul>
